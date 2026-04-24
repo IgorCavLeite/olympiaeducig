@@ -1,0 +1,44 @@
+[
+  {
+    "titulo": "OBMEP 2020 - Matemática Fundamental",
+    "ano": 2020,
+    "disciplina": "Matemática",
+    "nivel": "fundamental",
+    "descricao": "Questionário baseado na Olimpíada Brasileira de Matemática das Escolas Públicas 2020",
+    "perguntas": [
+      {
+        "pergunta": "Qual é o resultado de 2 + 3?",
+        "tipo": "multipla_escolha",
+        "pontos": 1,
+        "opcoes": [
+          { "opcao": "3", "correta": false },
+          { "opcao": "4", "correta": false },
+          { "opcao": "5", "correta": true },
+          { "opcao": "6", "correta": false }
+        ]
+      },
+      {
+        "pergunta": "Um quadrado tem quantos lados?",
+        "tipo": "multipla_escolha",
+        "pontos": 1,
+        "opcoes": [
+          { "opcao": "3", "correta": false },
+          { "opcao": "4", "correta": true },
+          { "opcao": "5", "correta": false },
+          { "opcao": "6", "correta": false }
+        ]
+      },
+      {
+        "pergunta": "Qual é o próximo número na sequência: 1, 3, 5, 7, ...?",
+        "tipo": "multipla_escolha",
+        "pontos": 2,
+        "opcoes": [
+          { "opcao": "8", "correta": false },
+          { "opcao": "9", "correta": true },
+          { "opcao": "10", "correta": false },
+          { "opcao": "11", "correta": false }
+        ]
+      }
+    ]
+  }
+]
