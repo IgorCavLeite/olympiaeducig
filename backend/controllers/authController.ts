@@ -18,7 +18,7 @@ export const register = (req: Request, res: Response) => {
   const { nome, email, senha, matricula, escola } = req.body;
 
   if (!nome || !email || !senha || !matricula || !escola) {
-    return res.status(400).json({ error: 'Todos os camppos são obrigatórios' });
+    return res.status(400).json({ error: 'Todos os campos são obrigatórios' });
   }
 
   const checkSql = 'SELECT id FROM usuarios WHERE email = ?';
