@@ -1,15 +1,12 @@
 @echo off
 title Ativando Projeto OlympIA
 echo ==========================================
-echo    IP ATUAL DA REDE: 172.16.20.162
+echo    Iniciando OlympIA...
 echo ==========================================
 
-:: Inicia o Backend
 start cmd /k "echo --- BACKEND --- && cd backend && npx tsx server.ts"
-
-:: Inicia o Frontend
-start cmd /k "echo --- FRONTEND --- && cd frontend && npx expo start"
+start cmd /k "echo --- FRONTEND --- && cd frontend && npx expo start --host lan"
 
 echo.
-echo Verifique se o IP acima e o do Config.ts sao iguais!
+echo Projeto iniciado! Escaneie o QR code no celular.
 pause

@@ -19,5 +19,4 @@ app.use('/api/chat', chatRoutes);
 app.listen(PORT, '0.0.0.0', () => {
     console.log(`OlympIA Backend ON!`);
     console.log(`Local: http://localhost:${PORT}`);
-    console.log(`Rede:  http://172.16.20.162:${PORT}`);
 });
