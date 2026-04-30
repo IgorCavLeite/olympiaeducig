@@ -1,0 +1,371 @@
+[
+  {
+    "titulo": "XIV Olimpíada Brasileira de Biologia - 1ª fase",
+    "ano": 2018,
+    "disciplina": "Biologia",
+    "nivel": "medio",
+    "descricao": "Prova da 1ª fase da XIV Olimpíada Brasileira de Biologia, aplicada em 23/24 de fevereiro de 2018.",
+    "perguntas": [
+      {
+        "pergunta": "1) A pandemia de gripe hoje é menos provável devido às campanhas de vacinação promovidas em diversos países. O item abaixo que NÃO contém um dos possíveis componentes de vacinas é:",
+        "tipo": "multipla_escolha",
+        "pontos": 1,
+        "opcoes": [
+          { "opcao": "Antígenos específicos.", "correta": false },
+          { "opcao": "Patógenos mortos.", "correta": false },
+          { "opcao": "Patógenos enfraquecidos.", "correta": false },
+          { "opcao": "Anticorpos específicos.", "correta": true },
+          { "opcao": "Ácido nucleico do patógeno.", "correta": false }
+        ]
+      },
+      {
+        "pergunta": "2) Vírus são tidos como em um limiar entre seres vivos e matéria bruta. A característica comum entre os seres vivos e os vírus é:",
+        "tipo": "multipla_escolha",
+        "pontos": 1,
+        "opcoes": [
+          { "opcao": "Capacidade de mineralização.", "correta": false },
+          { "opcao": "Constituição química simples.", "correta": false },
+          { "opcao": "Célula sem núcleo individualizado.", "correta": false },
+          { "opcao": "Capacidade de reprodução.", "correta": true },
+          { "opcao": "Presença de metabolismo.", "correta": false }
+        ]
+      },
+      {
+        "pergunta": "3) Em 2005, os pesquisadores anunciaram ter determinado o sequenciamento genético do vírus da gripe de 1918. O vírus foi recuperado do corpo de uma vítima da doença sepultada no permafrost do Alasca, e também de amostras de soldados norte-americanos abatidos pela doença naquela época. Neste sequenciamento não foram encontrados nucleotídeos contendo:",
+        "tipo": "multipla_escolha",
+        "pontos": 1,
+        "opcoes": [
+          { "opcao": "Adenina.", "correta": false },
+          { "opcao": "Citosina.", "correta": false },
+          { "opcao": "Uracila.", "correta": false },
+          { "opcao": "Timina.", "correta": true },
+          { "opcao": "Guanina.", "correta": false }
+        ]
+      },
+      {
+        "pergunta": "4) Doenças causadas por vírus usualmente são mais letais em seu surgimento do que após inúmeros surtos. Uma provável explicação para esta redução da letalidade é:",
+        "tipo": "multipla_escolha",
+        "pontos": 1,
+        "opcoes": [
+          { "opcao": "Aumento das taxas de mutações virais ao longo do tempo.", "correta": false },
+          { "opcao": "Coevolução parasita-hospedeiro.", "correta": true },
+          { "opcao": "Surgimento de novos tipos de agentes transmissores.", "correta": false },
+          { "opcao": "Desenvolvimento de novos tipos de antibióticos que ajam sobre o metabolismo viral.", "correta": false },
+          { "opcao": "Aumento da produção de toxinas pelas novas linhagens virais.", "correta": false }
+        ]
+      },
+      {
+        "pergunta": "5) Nos recentes casos de febre amarela no Brasil, parte da população erroneamente atacou diversas espécies de macacos por acreditar que estes seriam a origem da doença. Nesta doença os macacos podem ser classificados como:",
+        "tipo": "multipla_escolha",
+        "pontos": 1,
+        "opcoes": [
+          { "opcao": "Hospedeiro.", "correta": true },
+          { "opcao": "Vetor.", "correta": false },
+          { "opcao": "Agente transmissor.", "correta": false },
+          { "opcao": "Agente causador.", "correta": false },
+          { "opcao": "Agente etiológico.", "correta": false }
+        ]
+      },
+      {
+        "pergunta": "6) A manga é cultivada em vários países do mundo, tendo como principal espécie Mangifera indica (2n = 40). O número esperado de cromossomos em seu pólen, caule e endosperma é respectivamente:",
+        "tipo": "multipla_escolha",
+        "pontos": 1,
+        "opcoes": [
+          { "opcao": "20, 40, 60.", "correta": true },
+          { "opcao": "20, 20, 40.", "correta": false },
+          { "opcao": "20, 40, 40.", "correta": false },
+          { "opcao": "40, 40, 40.", "correta": false },
+          { "opcao": "40, 40, 60.", "correta": false }
+        ]
+      },
+      {
+        "pergunta": "7) Supondo que a cor rosa da manga seja determinada por um gene autossômico dominante e a cor amarela por seu alelo recessivo, na fecundação de uma planta feminina homozigota para a cor amarela por pólen oriundo de uma planta rosa homozigota, espera-se encontrar frutos de cor:",
+        "tipo": "multipla_escolha",
+        "pontos": 1,
+        "opcoes": [
+          { "opcao": "Somente rosas.", "correta": false },
+          { "opcao": "Somente amarelos.", "correta": true },
+          { "opcao": "50% amarelos e 50% rosas.", "correta": false },
+          { "opcao": "75% amarelos e 25% rosas.", "correta": false },
+          { "opcao": "25% amarelos e 75% rosas.", "correta": false }
+        ]
+      },
+      {
+        "pergunta": "8) O mel de uruçu é produzido por abelhas nativas e destaca-se pelo sabor bastante açucarado. O principal componente de sua composição possui como principal função no organismo humano:",
+        "tipo": "multipla_escolha",
+        "pontos": 1,
+        "opcoes": [
+          { "opcao": "Estrutural.", "correta": false },
+          { "opcao": "Reguladora.", "correta": false },
+          { "opcao": "Energética.", "correta": true },
+          { "opcao": "Imunológica.", "correta": false },
+          { "opcao": "Catalítica.", "correta": false }
+        ]
+      },
+      {
+        "pergunta": "9) A cor da pele da Morena Tropicana é determinada pela atividade de células especiais denominadas melanócitos. A pele morena traz vantagem adaptativa nos trópicos uma vez que:",
+        "tipo": "multipla_escolha",
+        "pontos": 1,
+        "opcoes": [
+          { "opcao": "Aumenta a ativação da vitamina D.", "correta": false },
+          { "opcao": "Protege contra os raios ultravioleta.", "correta": true },
+          { "opcao": "Aumenta a produção de queratina.", "correta": false },
+          { "opcao": "Promove camuflagem em ambientes florestais.", "correta": false },
+          { "opcao": "Diminui a necessidade de pelos protetores.", "correta": false }
+        ]
+      },
+      {
+        "pergunta": "10) Manga, sapoti, juá e uruçu possuem em comum a seguinte característica:",
+        "tipo": "multipla_escolha",
+        "pontos": 1,
+        "opcoes": [
+          { "opcao": "Cloroplastos.", "correta": false },
+          { "opcao": "Celulose.", "correta": false },
+          { "opcao": "Ausência de núcleo celular.", "correta": false },
+          { "opcao": "Nutrição heterotrófica.", "correta": false },
+          { "opcao": "Produção de gametas.", "correta": true }
+        ]
+      },
+      {
+        "pergunta": "11) A criatura aquática do filme possui membranas interdigitais (entre os dedos) que facilitam sua natação. A espécie humana possui estas membranas ao longo do seu desenvolvimento embrionário, mas estas regridem devido à atividade de enzimas presentes no(a):",
+        "tipo": "multipla_escolha",
+        "pontos": 1,
+        "opcoes": [
+          { "opcao": "Lisossomo.", "correta": true },
+          { "opcao": "Retículo endoplasmático.", "correta": false },
+          { "opcao": "Complexo golgiense.", "correta": false },
+          { "opcao": "Peroxissomo.", "correta": false },
+          { "opcao": "Centríolo.", "correta": false }
+        ]
+      },
+      {
+        "pergunta": "12) Digamos que um diretor de filme explique que a necessidade de respirar debaixo d'água tenha orientado a evolução da espécie humana neste sentido. Tal explicação se encaixaria nas ideias evolutivas de:",
+        "tipo": "multipla_escolha",
+        "pontos": 1,
+        "opcoes": [
+          { "opcao": "Lamarck.", "correta": true },
+          { "opcao": "Darwin.", "correta": false },
+          { "opcao": "Malthus.", "correta": false },
+          { "opcao": "Morgan.", "correta": false },
+          { "opcao": "Dawkins.", "correta": false }
+        ]
+      },
+      {
+        "pergunta": "13) No fim do filme, Elisa consegue sobreviver na água devido à abertura de fendas branquiais no seu pescoço. Fendas branquiais funcionais e desprotegidas podem ser encontradas em:",
+        "tipo": "multipla_escolha",
+        "pontos": 1,
+        "opcoes": [
+          { "opcao": "Atum.", "correta": false },
+          { "opcao": "Robalo.", "correta": false },
+          { "opcao": "Larva de mosquito.", "correta": false },
+          { "opcao": "Pinguim.", "correta": false },
+          { "opcao": "Raia.", "correta": true }
+        ]
+      },
+      {
+        "pergunta": "14) O processo desenvolvido pelos cientistas mimetiza a fotossíntese. A organela responsável por este processo nas plantas é o(a):",
+        "tipo": "multipla_escolha",
+        "pontos": 1,
+        "opcoes": [
+          { "opcao": "Ribossomo.", "correta": false },
+          { "opcao": "Retículo endoplasmático.", "correta": false },
+          { "opcao": "Complexo golgiense.", "correta": false },
+          { "opcao": "Mitocôndria.", "correta": false },
+          { "opcao": "Cloroplasto.", "correta": true }
+        ]
+      },
+      {
+        "pergunta": "15) A conversão da energia luminosa em energia química depende de complexos denominados antenas. Graças a eles, a energia luminosa captada excita elétrons, cujo transporte permite a produção de ATP. A energia do ATP posteriormente utilizada na produção de carboidratos provém do(a):",
+        "tipo": "multipla_escolha",
+        "pontos": 1,
+        "opcoes": [
+          { "opcao": "Adenosina.", "correta": false },
+          { "opcao": "Ribose.", "correta": false },
+          { "opcao": "Desoxirribose.", "correta": false },
+          { "opcao": "Ligações fosfato.", "correta": true },
+          { "opcao": "CO2.", "correta": false }
+        ]
+      },
+      {
+        "pergunta": "16) O agravamento do efeito estufa preocupa grande parte da comunidade científica mundial. A atividade que contribui com a redução da emissão do principal gás estufa é:",
+        "tipo": "multipla_escolha",
+        "pontos": 1,
+        "opcoes": [
+          { "opcao": "Aumento do consumo de carne.", "correta": false },
+          { "opcao": "Diminuição do uso de aerossóis.", "correta": false },
+          { "opcao": "Diminuição do uso de combustíveis fósseis.", "correta": true },
+          { "opcao": "Aumento do uso de derivados de petróleo.", "correta": false },
+          { "opcao": "Diminuição das áreas florestadas.", "correta": false }
+        ]
+      },
+      {
+        "pergunta": "17) Uma importante consequência do superaquecimento global é:",
+        "tipo": "multipla_escolha",
+        "pontos": 1,
+        "opcoes": [
+          { "opcao": "Aumento do nível dos oceanos.", "correta": true },
+          { "opcao": "Acidificação das chuvas.", "correta": false },
+          { "opcao": "Aumento da taxa de fotossíntese.", "correta": false },
+          { "opcao": "Aumento do assoreamento dos rios.", "correta": false },
+          { "opcao": "Diminuição das áreas áridas.", "correta": false }
+        ]
+      },
+      {
+        "pergunta": "18) De acordo com o texto, a ação contraceptiva do anel vaginal ocorre devido ao:",
+        "tipo": "multipla_escolha",
+        "pontos": 1,
+        "opcoes": [
+          { "opcao": "Bloqueio da passagem dos espermatozoides pelo canal vaginal.", "correta": false },
+          { "opcao": "Inibição da maturação e ruptura do folículo ovariano.", "correta": true },
+          { "opcao": "Morte dos espermatozoides no canal vaginal.", "correta": false },
+          { "opcao": "Morte dos ovócitos na tuba uterina.", "correta": false },
+          { "opcao": "Morte do embrião após sua implantação.", "correta": false }
+        ]
+      },
+      {
+        "pergunta": "19) O uso do anel vaginal pode ser comparado ao de preservativos uma vez que ambos:",
+        "tipo": "multipla_escolha",
+        "pontos": 1,
+        "opcoes": [
+          { "opcao": "Evitam a transmissão de doenças sexualmente transmissíveis.", "correta": false },
+          { "opcao": "Possuem eficiência semelhante.", "correta": true },
+          { "opcao": "Atuam de forma semelhante no organismo da mulher.", "correta": false },
+          { "opcao": "Contêm hormônios que interferem no ciclo menstrual.", "correta": false },
+          { "opcao": "Podem promover o aborto.", "correta": false }
+        ]
+      },
+      {
+        "pergunta": "20) Os principais hormônios utilizados nas pílulas, anéis e adesivos anticoncepcionais são:",
+        "tipo": "multipla_escolha",
+        "pontos": 1,
+        "opcoes": [
+          { "opcao": "Estrogênios e progesterona.", "correta": true },
+          { "opcao": "Gonadotrofinas coriônicas.", "correta": false },
+          { "opcao": "Gonadotrofinas hipofisárias.", "correta": false },
+          { "opcao": "FSH e LH.", "correta": false },
+          { "opcao": "GnRH.", "correta": false }
+        ]
+      },
+      {
+        "pergunta": "21) O uso de métodos anticoncepcionais hormonais aumenta o risco da ocorrência de trombose venosa. A ocorrência deste problema está diretamente relacionada à atividade de:",
+        "tipo": "multipla_escolha",
+        "pontos": 1,
+        "opcoes": [
+          { "opcao": "Hemácias.", "correta": false },
+          { "opcao": "Leucócitos.", "correta": false },
+          { "opcao": "Plaquetas.", "correta": true },
+          { "opcao": "Neurônios.", "correta": false },
+          { "opcao": "Osteócitos.", "correta": false }
+        ]
+      },
+      {
+        "pergunta": "22) O hematócrito de cinco homens sedentários foi analisado em laboratório, sendo quatro deles moradores da cidade de São Paulo (760 m de altitude) e um deles morador de La Paz (3640 m de altitude). A alternativa que contém o número esperado de eritrócitos (x10^6/mm^3) no indivíduo homem morador de La Paz é:",
+        "tipo": "multipla_escolha",
+        "pontos": 1,
+        "opcoes": [
+          { "opcao": "3,5.", "correta": false },
+          { "opcao": "4.", "correta": false },
+          { "opcao": "4,5.", "correta": false },
+          { "opcao": "5.", "correta": false },
+          { "opcao": "6.", "correta": true }
+        ]
+      },
+      {
+        "pergunta": "23) Nos meses de junho e julho deste ano ocorrerá a Copa do Mundo da FIFA. Comparando a musculatura do goleiro Alisson com a do lateral Marcelo, espera-se encontrar em Alisson proporcionalmente:",
+        "tipo": "multipla_escolha",
+        "pontos": 1,
+        "opcoes": [
+          { "opcao": "Maior quantidade de mitocôndrias.", "correta": false },
+          { "opcao": "Menor quantidade de mioglobina.", "correta": true },
+          { "opcao": "Maior capacidade pulmonar.", "correta": false },
+          { "opcao": "Menor capacidade fermentativa.", "correta": false },
+          { "opcao": "Maior quantidade de hemoglobina.", "correta": false }
+        ]
+      },
+      {
+        "pergunta": "24) A estratégia presente no besouro é somente uma dentre as diversas encontradas na natureza para evitar a predação. Identifique a alternativa abaixo que NÃO contém uma estratégia típica de predadores/presas:",
+        "tipo": "multipla_escolha",
+        "pontos": 1,
+        "opcoes": [
+          { "opcao": "Camuflagem.", "correta": false },
+          { "opcao": "Mimetismo.", "correta": false },
+          { "opcao": "Coloração de advertência.", "correta": false },
+          { "opcao": "Perda de parte do corpo (autotomia).", "correta": false },
+          { "opcao": "Indução de mutações.", "correta": true }
+        ]
+      },
+      {
+        "pergunta": "25) Uma característica comum do besouro bombardeiro com os demais insetos é:",
+        "tipo": "multipla_escolha",
+        "pontos": 1,
+        "opcoes": [
+          { "opcao": "Excreção por nefrídios.", "correta": false },
+          { "opcao": "Respiração por brânquias.", "correta": false },
+          { "opcao": "Exoesqueleto de celulose.", "correta": false },
+          { "opcao": "Três pares de patas.", "correta": true },
+          { "opcao": "Aparelho bucal picador-sugador.", "correta": false }
+        ]
+      },
+      {
+        "pergunta": "26) Atualmente, o número de óbitos após o transplante de órgãos é bem menor. O uso de medicamentos imunossupressores contribui para este sucesso. Esses medicamentos agem:",
+        "tipo": "multipla_escolha",
+        "pontos": 1,
+        "opcoes": [
+          { "opcao": "Diminuindo a rejeição.", "correta": true },
+          { "opcao": "Aumentando a atividade leucocitária.", "correta": false },
+          { "opcao": "Aumentando a produção de anticorpos.", "correta": false },
+          { "opcao": "Diminuindo a formação de trombos.", "correta": false },
+          { "opcao": "Aumentando a cicatrização.", "correta": false }
+        ]
+      },
+      {
+        "pergunta": "27) Ainda hoje, muitos dos pacientes que aguardam transplante cardíaco possuem complicações relacionadas à doença de Chagas. A propagação desta doença pode ser evitada com:",
+        "tipo": "multipla_escolha",
+        "pontos": 1,
+        "opcoes": [
+          { "opcao": "Aumento das construções de alvenaria.", "correta": true },
+          { "opcao": "Tratamento de água e esgoto.", "correta": false },
+          { "opcao": "Lavar bem as mãos antes das refeições.", "correta": false },
+          { "opcao": "Combate ao mosquito transmissor.", "correta": false },
+          { "opcao": "Vacinação da população.", "correta": false }
+        ]
+      },
+      {
+        "pergunta": "28) Suponha um indivíduo que tenha que receber um cateter em seu átrio direito. Caso o cateter seja inserido em uma veia do braço e siga o sentido do fluxo sanguíneo, o caminho percorrido por este será:",
+        "tipo": "multipla_escolha",
+        "pontos": 1,
+        "opcoes": [
+          { "opcao": "Veias cavas -> átrio direito.", "correta": true },
+          { "opcao": "Veias pulmonares -> átrio direito.", "correta": false },
+          { "opcao": "Veias cavas -> átrio esquerdo -> ventrículo esquerdo -> artéria pulmonar -> pulmões -> veias pulmonares -> átrio direito.", "correta": false },
+          { "opcao": "Veias pulmonares -> átrio esquerdo -> ventrículo esquerdo -> artéria pulmonar -> pulmões -> veias cavas -> átrio direito.", "correta": false },
+          { "opcao": "Veias cavas -> átrio esquerdo -> ventrículo direito -> artéria pulmonar -> pulmões -> veias pulmonares -> átrio direito.", "correta": false }
+        ]
+      },
+      {
+        "pergunta": "29) A energia solar é fundamental para a manutenção dos ecossistemas. Pode-se afirmar que em uma cadeia alimentar a energia:",
+        "tipo": "multipla_escolha",
+        "pontos": 1,
+        "opcoes": [
+          { "opcao": "Mantém-se constante ao longo dos níveis tróficos.", "correta": false },
+          { "opcao": "Diminui ao longo da cadeia alimentar.", "correta": true },
+          { "opcao": "Aumenta ao longo da cadeia alimentar.", "correta": false },
+          { "opcao": "É maior nos animais do que nas plantas.", "correta": false },
+          { "opcao": "Sempre é maior nos decompositores.", "correta": false }
+        ]
+      },
+      {
+        "pergunta": "30) Mais de um ano e meio após o acidente da barragem de Fundão, o Rio Doce sofre uma recuperação lenta e gradual. Este processo pode ser acelerado pelo homem ou mesmo ocorrer naturalmente. A recuperação de ecossistemas ao longo do tempo denomina-se:",
+        "tipo": "multipla_escolha",
+        "pontos": 1,
+        "opcoes": [
+          { "opcao": "Zonação.", "correta": false },
+          { "opcao": "Evolução.", "correta": false },
+          { "opcao": "Sucessão ecológica.", "correta": true },
+          { "opcao": "Bioacumulação.", "correta": false },
+          { "opcao": "Eutrofização.", "correta": false }
+        ]
+      }
+    ]
+  }
+]
