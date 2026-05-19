@@ -4,20 +4,19 @@ import * as jwt from 'jsonwebtoken';
 import bcrypt from 'bcrypt';
 import jwtConfig from '../config/jwtConfig';
 
-// A interface precisa estar aqui para o arquivo ser consistente
 interface Usuario {
   id: number;
   nome: string;
   email: string;
   senha?: string;
-  matricula: string;
-  escola: string;
 }
 
-export const register = (req: Request, res: Response) => {
-  const { nome, email, senha, matricula, escola } = req.body;
+// CADASTRO
 
-  if (!nome || !email || !senha || !matricula || !escola) {
+export const register = (req: Request, res: Response) => {
+  const { nome, email, senha } = req.body;
+
+  if (!nome || !email || !senha) {
     return res.status(400).json({ error: 'Todos os campos são obrigatórios' });
   }
 
@@ -38,9 +37,8 @@ export const register = (req: Request, res: Response) => {
         return res.status(500).json({ error: 'Erro no servidor' });
       }
 
-      const insertSql = 'INSERT INTO usuarios (nome, email, senha, matricula,escola) VALUES (?, ?, ?, ?, ?)';
-
-      connection.query(insertSql, [nome, email, hash, matricula, escola], (insertErr, result: any) => {
+      const insertSql = 'INSERT INTO usuarios (nome, email, senha) VALUES (?, ?, ?)';
+      connection.query(insertSql, [nome, email, hash], (insertErr) => {
         if (insertErr) {
           console.error('Erro ao criar usuário:', insertErr);
           return res.status(500).json({ error: 'Erro no servidor' });
@@ -52,7 +50,8 @@ export const register = (req: Request, res: Response) => {
   });
 };
 
-// O 'export' aqui é o que transforma o arquivo em um módulo
+// LOGIN
+
 export const login = (req: Request, res: Response) => {
   const { email, senha } = req.body;
 
@@ -61,7 +60,6 @@ export const login = (req: Request, res: Response) => {
   }
 
   const sql = 'SELECT * FROM usuarios WHERE email = ?';
-  
   connection.query(sql, [email], (err, results: any) => {
     if (err) {
       console.error('Erro na consulta:', err);
@@ -98,8 +96,94 @@ export const login = (req: Request, res: Response) => {
       res.json({
         message: 'Login bem-sucedido',
         token,
-        user: { id: user.id, nome: user.nome, email: user.email }
+        user: { id: user.id, nome: user.nome, email: user.email },
       });
     });
   });
+};
+
+// EDITAR NOME
+
+export const editarNome = (req: Request, res: Response) => {
+  const { id } = req.params;
+  const { nome } = req.body;
+
+  if (!nome || !nome.trim()) {
+    return res.status(400).json({ error: 'O nome não pode estar vazio' });
+  }
+
+  connection.query(
+    'UPDATE usuarios SET nome = ? WHERE id = ?',
+    [nome.trim(), id],
+    (err) => {
+      if (err) {
+        console.error('Erro ao atualizar nome:', err);
+        return res.status(500).json({ error: 'Erro no servidor' });
+      }
+      res.json({ message: 'Nome atualizado com sucesso' });
+    }
+  );
+};
+
+// ALTERAR SENHA
+
+export const alterarSenha = (req: Request, res: Response) => {
+  const { id } = req.params;
+  const { senhaAtual, novaSenha } = req.body;
+
+  if (!senhaAtual || !novaSenha) {
+    return res.status(400).json({ error: 'Todos os campos são obrigatórios' });
+  }
+
+  if (novaSenha.length < 8) {
+    return res.status(400).json({ error: 'A nova senha deve ter no mínimo 8 caracteres' });
+  }
+
+  // Busca a senha atual do usuário
+  connection.query(
+    'SELECT senha FROM usuarios WHERE id = ?',
+    [id],
+    (err, results: any) => {
+      if (err) {
+        console.error('Erro na consulta:', err);
+        return res.status(500).json({ error: 'Erro no servidor' });
+      }
+
+      const rows = results as Usuario[];
+      if (rows.length === 0) {
+        return res.status(404).json({ error: 'Usuário não encontrado' });
+      }
+
+      const senhaHash = rows[0].senha!;
+
+      // Verifica se a senha atual está correta
+      bcrypt.compare(senhaAtual, senhaHash, (compareErr, isMatch) => {
+        if (compareErr) {
+          return res.status(500).json({ error: 'Erro no servidor' });
+        }
+
+        if (!isMatch) {
+          return res.status(401).json({ error: 'Senha atual incorreta' });
+        }
+
+        // Gera o hash da nova senha e salva
+        bcrypt.hash(novaSenha, 10, (hashErr, novoHash) => {
+          if (hashErr) {
+            return res.status(500).json({ error: 'Erro no servidor' });
+          }
+
+          connection.query(
+            'UPDATE usuarios SET senha = ? WHERE id = ?',
+            [novoHash, id],
+            (updateErr) => {
+              if (updateErr) {
+                return res.status(500).json({ error: 'Erro no servidor' });
+              }
+              res.json({ message: 'Senha alterada com sucesso' });
+            }
+          );
+        });
+      });
+    }
+  );
 };

@@ -12,4 +12,6 @@ export const ENDPOINTS = {
   LOGIN: `${API_BASE_URL}/auth/login`,
   REGISTER: `${API_BASE_URL}/auth/register`,
   CHAT: `${API_BASE_URL}/chat`,
+  CONQUISTAS: `${API_BASE_URL}/conquistas`,
+  AUTH: `${API_BASE_URL}/auth`,
 };
