@@ -6,10 +6,14 @@ import { useRouter } from 'expo-router';
 export default function Home() {
   const router = useRouter();
 
-  useEffect(() => {
-  AsyncStorage.getItem('token').then(token => {
-    if (!token) router.replace('/');
-  });
+useEffect(() => {
+  const verificar = async () => {
+    const token = await AsyncStorage.getItem('token');
+    if (!token) {
+      setTimeout(() => router.replace('/'), 0);
+    }
+  };
+  verificar();
 }, []);
 
   return (

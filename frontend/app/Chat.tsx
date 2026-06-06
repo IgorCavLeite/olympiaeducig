@@ -23,9 +23,13 @@ type Message = {
 const router = useRouter();
 
 useEffect(() => {
-  AsyncStorage.getItem('token').then(token => {
-    if (!token) router.replace('/');
-  });
+  const verificar = async () => {
+    const token = await AsyncStorage.getItem('token');
+    if (!token) {
+      setTimeout(() => router.replace('/'), 0);
+    }
+  };
+  verificar();
 }, []);
 
 const Chat = () => {
