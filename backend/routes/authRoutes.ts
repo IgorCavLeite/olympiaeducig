@@ -1,5 +1,6 @@
 import express from 'express';
 import { login, register, editarNome, alterarSenha } from '../controllers/authController';
+import { autenticar } from '../middleware/authMiddleware';
 
 const router = express.Router();
 
@@ -10,9 +11,9 @@ router.post('/register', register);
 router.post('/login', login);
 
 // Editar nome
-router.put('/perfil/:id', editarNome);
+router.put('/perfil/:id', autenticar, editarNome);
 
 // Alterar senha
-router.put('/senha/:id', alterarSenha);
+router.put('/senha/:id', autenticar, alterarSenha);
 
 export default router;
