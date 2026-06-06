@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import {View, Text, StyleSheet, TouchableOpacity, Alert, TextInput, Modal, ActivityIndicator, Keyboard} from 'react-native';
 import { useRouter } from 'expo-router';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import axios from 'axios';
+import api from '../constants/api';
 import { ENDPOINTS } from '../constants/Config';
 
 export default function Perfil() {
@@ -27,14 +27,17 @@ export default function Perfil() {
     carregarUsuario();
   }, []);
 
-  const carregarUsuario = async () => {
-    const nome = await AsyncStorage.getItem('username');
-    const id = await AsyncStorage.getItem('usuario_id');
-    console.log('usuario_id:', id);
-    console.log('username:', nome);
-    if (nome) setUsername(nome);
-    if (id) setUsuarioId(id);
-  };
+const carregarUsuario = async () => {
+  const token = await AsyncStorage.getItem('token');
+  if (!token) {
+    router.replace('/');
+    return;
+  }
+  const nome = await AsyncStorage.getItem('username');
+  const id = await AsyncStorage.getItem('usuario_id');
+  if (nome) setUsername(nome);
+  if (id) setUsuarioId(id);
+};
 
   // EDITAR NOME
 
@@ -48,7 +51,7 @@ export default function Perfil() {
 
     setSalvandoNome(true);
     try {
-      await axios.put(`${ENDPOINTS.AUTH}/perfil/${usuarioId}`, { nome: novoNome.trim() });
+      await api.put(`${ENDPOINTS.AUTH}/perfil/${usuarioId}`, { nome: novoNome.trim() });
       await AsyncStorage.setItem('username', novoNome.trim());
       setUsername(novoNome.trim());
       setModalNomeVisible(false);
@@ -83,7 +86,7 @@ export default function Perfil() {
 
     setSalvandoSenha(true);
     try {
-      await axios.put(`${ENDPOINTS.AUTH}/senha/${usuarioId}`, { senhaAtual, novaSenha });
+      await api.put(`${ENDPOINTS.AUTH}/senha/${usuarioId}`, { senhaAtual, novaSenha });
       setModalSenhaVisible(false);
       setSenhaAtual(''); setNovaSenha(''); setConfirmarSenha('');
       Alert.alert('Sucesso', 'Senha alterada com sucesso!');

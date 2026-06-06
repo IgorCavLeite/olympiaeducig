@@ -1,5 +1,5 @@
 import { Request, Response } from 'express';
-import connection from '../config/db';
+import pool from '../config/db';
 import * as jwt from 'jsonwebtoken';
 import bcrypt from 'bcrypt';
 import jwtConfig from '../config/jwtConfig';
@@ -13,98 +13,92 @@ interface Usuario {
 
 // CADASTRO
 
-export const register = (req: Request, res: Response) => {
+export const register = async (req: Request, res: Response) => {
   const { nome, email, senha } = req.body;
 
   if (!nome || !email || !senha) {
     return res.status(400).json({ error: 'Todos os campos são obrigatórios' });
   }
 
-  const checkSql = 'SELECT id FROM usuarios WHERE email = ?';
-  connection.query(checkSql, [email], (err, results: any) => {
-    if (err) {
-      console.error('Erro na consulta:', err);
-      return res.status(500).json({ error: 'Erro no servidor' });
-    }
+  try {
+    const [rows]: any = await pool.query(
+      'SELECT id FROM usuarios WHERE email = ?',
+      [email]
+    );
 
-    if ((results as any[]).length > 0) {
+    if (rows.length > 0) {
       return res.status(409).json({ error: 'Email já está em uso' });
     }
 
-    bcrypt.hash(senha, 10, (hashErr, hash) => {
-      if (hashErr) {
-        console.error('Erro ao gerar hash da senha:', hashErr);
-        return res.status(500).json({ error: 'Erro no servidor' });
-      }
+    const hash = await bcrypt.hash(senha, 10);
 
-      const insertSql = 'INSERT INTO usuarios (nome, email, senha) VALUES (?, ?, ?)';
-      connection.query(insertSql, [nome, email, hash], (insertErr) => {
-        if (insertErr) {
-          console.error('Erro ao criar usuário:', insertErr);
-          return res.status(500).json({ error: 'Erro no servidor' });
-        }
+    await pool.query(
+      'INSERT INTO usuarios (nome, email, senha) VALUES (?, ?, ?)',
+      [nome, email, hash]
+    );
 
-        res.status(201).json({ message: 'Usuário criado com sucesso' });
-      });
-    });
-  });
+    return res.status(201).json({ message: 'Usuário criado com sucesso' });
+
+  } catch (err) {
+    console.error('Erro ao cadastrar usuário:', err);
+    return res.status(500).json({ error: 'Erro no servidor' });
+  }
 };
 
 // LOGIN
 
-export const login = (req: Request, res: Response) => {
+export const login = async (req: Request, res: Response) => {
   const { email, senha } = req.body;
 
   if (!email || !senha) {
     return res.status(400).json({ error: 'Email e senha são obrigatórios' });
   }
 
-  const sql = 'SELECT * FROM usuarios WHERE email = ?';
-  connection.query(sql, [email], (err, results: any) => {
-    if (err) {
-      console.error('Erro na consulta:', err);
-      return res.status(500).json({ error: 'Erro no servidor' });
-    }
+  try {
+    const [rows]: any = await pool.query(
+      'SELECT * FROM usuarios WHERE email = ?',
+      [email]
+    );
 
-    const rows = results as Usuario[];
-    if (rows.length === 0) {
+    const usuarios = rows as Usuario[];
+
+    if (usuarios.length === 0) {
       return res.status(401).json({ error: 'Email ou senha inválidos' });
     }
 
-    const user = rows[0];
+    const user = usuarios[0];
 
     if (!user.senha) {
-      return res.status(500).json({ error: 'Senha não encontrada para o usuário' });
+      return res.status(500).json({ error: 'Erro no servidor' });
     }
 
-    bcrypt.compare(senha, user.senha, (compareErr, isMatch) => {
-      if (compareErr) {
-        console.error('Erro ao comparar senhas:', compareErr);
-        return res.status(500).json({ error: 'Erro no servidor' });
-      }
+    const isMatch = await bcrypt.compare(senha, user.senha);
 
-      if (!isMatch) {
-        return res.status(401).json({ error: 'Email ou senha inválidos' });
-      }
+    if (!isMatch) {
+      return res.status(401).json({ error: 'Email ou senha inválidos' });
+    }
 
-      const token = jwt.sign(
-        { id: user.id, email: user.email },
-        jwtConfig.secret,
-        { expiresIn: jwtConfig.expiresIn as any }
-      );
+    const token = jwt.sign(
+      { id: user.id, email: user.email },
+      jwtConfig.secret,
+      { expiresIn: jwtConfig.expiresIn as any }
+    );
 
-      res.json({
-        message: 'Login bem-sucedido',
-        token,
-        user: { id: user.id, nome: user.nome, email: user.email },
-      });
+    return res.json({
+      message: 'Login bem-sucedido',
+      token,
+      user: { id: user.id, nome: user.nome, email: user.email },
     });
-  });
+
+  } catch (err) {
+    console.error('Erro ao fazer login:', err);
+    return res.status(500).json({ error: 'Erro no servidor' });
+  }
 };
 
 // EDITAR NOME
 
-export const editarNome = (req: Request, res: Response) => {
+export const editarNome = async (req: Request, res: Response) => {
   const { id } = req.params;
   const { nome } = req.body;
 
@@ -112,22 +106,23 @@ export const editarNome = (req: Request, res: Response) => {
     return res.status(400).json({ error: 'O nome não pode estar vazio' });
   }
 
-  connection.query(
-    'UPDATE usuarios SET nome = ? WHERE id = ?',
-    [nome.trim(), id],
-    (err) => {
-      if (err) {
-        console.error('Erro ao atualizar nome:', err);
-        return res.status(500).json({ error: 'Erro no servidor' });
-      }
-      res.json({ message: 'Nome atualizado com sucesso' });
-    }
-  );
+  try {
+    await pool.query(
+      'UPDATE usuarios SET nome = ? WHERE id = ?',
+      [nome.trim(), id]
+    );
+
+    return res.json({ message: 'Nome atualizado com sucesso' });
+
+  } catch (err) {
+    console.error('Erro ao atualizar nome:', err);
+    return res.status(500).json({ error: 'Erro no servidor' });
+  }
 };
 
 // ALTERAR SENHA
 
-export const alterarSenha = (req: Request, res: Response) => {
+export const alterarSenha = async (req: Request, res: Response) => {
   const { id } = req.params;
   const { senhaAtual, novaSenha } = req.body;
 
@@ -139,51 +134,36 @@ export const alterarSenha = (req: Request, res: Response) => {
     return res.status(400).json({ error: 'A nova senha deve ter no mínimo 8 caracteres' });
   }
 
-  // Busca a senha atual do usuário
-  connection.query(
-    'SELECT senha FROM usuarios WHERE id = ?',
-    [id],
-    (err, results: any) => {
-      if (err) {
-        console.error('Erro na consulta:', err);
-        return res.status(500).json({ error: 'Erro no servidor' });
-      }
+  try {
+    const [rows]: any = await pool.query(
+      'SELECT senha FROM usuarios WHERE id = ?',
+      [id]
+    );
 
-      const rows = results as Usuario[];
-      if (rows.length === 0) {
-        return res.status(404).json({ error: 'Usuário não encontrado' });
-      }
+    const usuarios = rows as Usuario[];
 
-      const senhaHash = rows[0].senha!;
-
-      // Verifica se a senha atual está correta
-      bcrypt.compare(senhaAtual, senhaHash, (compareErr, isMatch) => {
-        if (compareErr) {
-          return res.status(500).json({ error: 'Erro no servidor' });
-        }
-
-        if (!isMatch) {
-          return res.status(401).json({ error: 'Senha atual incorreta' });
-        }
-
-        // Gera o hash da nova senha e salva
-        bcrypt.hash(novaSenha, 10, (hashErr, novoHash) => {
-          if (hashErr) {
-            return res.status(500).json({ error: 'Erro no servidor' });
-          }
-
-          connection.query(
-            'UPDATE usuarios SET senha = ? WHERE id = ?',
-            [novoHash, id],
-            (updateErr) => {
-              if (updateErr) {
-                return res.status(500).json({ error: 'Erro no servidor' });
-              }
-              res.json({ message: 'Senha alterada com sucesso' });
-            }
-          );
-        });
-      });
+    if (usuarios.length === 0) {
+      return res.status(404).json({ error: 'Usuário não encontrado' });
     }
-  );
+
+    const senhaHash = usuarios[0].senha!;
+    const isMatch = await bcrypt.compare(senhaAtual, senhaHash);
+
+    if (!isMatch) {
+      return res.status(401).json({ error: 'Senha atual incorreta' });
+    }
+
+    const novoHash = await bcrypt.hash(novaSenha, 10);
+
+    await pool.query(
+      'UPDATE usuarios SET senha = ? WHERE id = ?',
+      [novoHash, id]
+    );
+
+    return res.json({ message: 'Senha alterada com sucesso' });
+
+  } catch (err) {
+    console.error('Erro ao alterar senha:', err);
+    return res.status(500).json({ error: 'Erro no servidor' });
+  }
 };

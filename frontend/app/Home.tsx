@@ -1,12 +1,16 @@
 import { View, Text, Image, Pressable, StyleSheet } from 'react-native';
+import { useEffect } from 'react';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useRouter } from 'expo-router';
 
 export default function Home() {
   const router = useRouter();
 
-  const handleLogout = () => {
-    router.push('/LoginScreen');
-  };
+  useEffect(() => {
+  AsyncStorage.getItem('token').then(token => {
+    if (!token) router.replace('/');
+  });
+}, []);
 
   return (
     <View style={styles.container}>
@@ -19,7 +23,7 @@ export default function Home() {
           <View><Image style={styles.iconesHome} source={require('../assets/images/conquistas.png')}/></View>
           <View><Image style={styles.iconesHome} source={require('../assets/images/configuracoes.png')}/></View>
           <View><Image style={styles.iconesHome} source={require('../assets/images/calendario.png')}/></View>
-          <View ><Image style={styles.iconesHome} source={require('../assets/images/quiz.png')}/></View>
+          <Pressable onPress={() => router.push('/Quiz')}><Image style={styles.iconesHome} source={require('../assets/images/quiz.png')}/></Pressable>
         </View>
 
     </View>
