@@ -1,7 +1,8 @@
 import express from 'express';
 const router = express.Router();
 import {chat} from '../controllers/chatController';
+import {authMiddleware} from '../middleware/authMiddleware';
 
-router.post('/', chat);
+router.post('/', authMiddleware, chat);
 
 export default router;

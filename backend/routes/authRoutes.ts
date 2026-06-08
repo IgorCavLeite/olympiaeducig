@@ -1,5 +1,6 @@
 import express from 'express';
-import { login, register, editarNome, alterarSenha } from '../controllers/authController';
+import { login, register, editarNome, alterarSenha, getPerfil } from '../controllers/authController';
+import { authMiddleware } from '../middleware/authMiddleware';
 import { chat } from '../controllers/chatController';
 
 const router = express.Router();
@@ -10,13 +11,16 @@ router.post('/register', register);
 // Rota de login
 router.post('/login', login);
 
+// Obter dados do perfil (com estatísticas)
+router.get('/perfil', authMiddleware, getPerfil);
+
 // Editar nome
-router.put('/perfil/:id', editarNome);
+router.put('/perfil', authMiddleware, editarNome);
 
 // Alterar senha
-router.put('/senha/:id', alterarSenha);
+router.put('/senha', authMiddleware, alterarSenha);
 
 // Rota do chatController
-router.post('/chat', chat);
+router.post('/chat', authMiddleware, chat);
 
 export default router;

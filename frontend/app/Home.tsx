@@ -19,7 +19,7 @@ export default function Home() {
           <View><Image style={styles.iconesHome} source={require('../assets/images/conquistas.png')}/></View>
           <View><Image style={styles.iconesHome} source={require('../assets/images/configuracoes.png')}/></View>
           <View><Image style={styles.iconesHome} source={require('../assets/images/calendario.png')}/></View>
-          <View ><Image style={styles.iconesHome} source={require('../assets/images/quiz.png')}/></View>
+          <Pressable onPress={() => router.push('/Quiz')}><Image style={styles.iconesHome} source={require('../assets/images/quiz.png')}/></Pressable>
         </View>
 
     </View>
