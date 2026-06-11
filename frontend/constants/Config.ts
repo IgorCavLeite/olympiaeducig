@@ -18,4 +18,5 @@ export const ENDPOINTS = {
   CONQUISTAS: `${API_BASE_URL}/conquistas`,
   AUTH: `${API_BASE_URL}/auth`,
   QUIZ: `${API_BASE_URL}/quiz`,
+  FEEDBACK: `${API_BASE_URL}/feedback`,
 };

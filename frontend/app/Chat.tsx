@@ -13,7 +13,6 @@ import {
 import { useRouter } from 'expo-router';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { ENDPOINTS } from '../constants/Config';
-import AsyncStorage from '@react-native-async-storage/async-storage';
 
 type Message = {
   id: string;

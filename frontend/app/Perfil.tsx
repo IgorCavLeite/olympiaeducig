@@ -13,7 +13,7 @@ import {
 } from 'react-native';
 import { useRouter } from 'expo-router';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import api from '../constants/api';
+import axios from 'axios';
 import { ENDPOINTS } from '../constants/Config';
 
 interface Stats {

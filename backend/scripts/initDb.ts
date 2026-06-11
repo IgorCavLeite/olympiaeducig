@@ -111,11 +111,29 @@ connection.connect((err) => {
           connection.query(tableRespostas, (rErr) => {
             if (rErr) {
               console.error('❌ Erro ao criar tabela "respostas_usuarios":', rErr.message);
-            } else {
-              console.log('✅ Tabela "respostas_usuarios" verificada/criada.');
-              console.log('\n🎉 Inicialização do banco de dados concluída com sucesso!');
+              connection.end();
+              process.exit(1);
             }
-            connection.end();
+            console.log('✅ Tabela "respostas_usuarios" verificada/criada.');
+
+            // 6. Criar tabela 'feedbacks'
+            const tableFeedbacks = `
+              CREATE TABLE IF NOT EXISTS feedbacks (
+                id INT AUTO_INCREMENT PRIMARY KEY,
+                mensagem TEXT NOT NULL,
+                criado_em TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+              ) ENGINE=InnoDB;
+            `;
+
+            connection.query(tableFeedbacks, (fErr) => {
+              if (fErr) {
+                console.error('❌ Erro ao criar tabela "feedbacks":', fErr.message);
+              } else {
+                console.log('✅ Tabela "feedbacks" verificada/criada.');
+                console.log('\n🎉 Inicialização do banco de dados concluída com sucesso!');
+              }
+              connection.end();
+            });
           });
         });
       });

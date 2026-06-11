@@ -3,6 +3,7 @@ import cors from 'cors';
 import authRoutes from './routes/authRoutes';
 import chatRoutes from './routes/chatRoutes';
 import quizRoutes from './routes/quizRoutes';
+import feedbackRoutes from './routes/feedbackRoutes';
 
 const app = express();
 const PORT = 3001;
@@ -26,6 +27,7 @@ app.get('/', (req, res) => {
 app.use('/api/auth', authRoutes);
 app.use('/api/chat', chatRoutes);
 app.use('/api/quiz', quizRoutes);
+app.use('/api/feedback', feedbackRoutes);
 
 app.listen(PORT, '0.0.0.0', () => {
     console.log(`OlympIA Backend ON!`);
