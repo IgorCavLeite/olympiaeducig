@@ -1,12 +1,20 @@
 import { View, Text, Image, Pressable, StyleSheet } from 'react-native';
+import { useEffect } from 'react';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useRouter } from 'expo-router';
 
 export default function Home() {
   const router = useRouter();
 
-  const handleLogout = () => {
-    router.push('/LoginScreen');
+useEffect(() => {
+  const verificar = async () => {
+    const token = await AsyncStorage.getItem('token');
+    if (!token) {
+      setTimeout(() => router.replace('/'), 0);
+    }
   };
+  verificar();
+}, []);
 
   return (
     <View style={styles.container}>

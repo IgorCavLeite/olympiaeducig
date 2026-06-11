@@ -10,6 +10,8 @@ import {
   StyleSheet,
   ActivityIndicator,
 } from 'react-native';
+import { useRouter } from 'expo-router';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { ENDPOINTS } from '../constants/Config';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
@@ -18,6 +20,18 @@ type Message = {
   text: string;
   sender: 'user' | 'ai';
 };
+
+const router = useRouter();
+
+useEffect(() => {
+  const verificar = async () => {
+    const token = await AsyncStorage.getItem('token');
+    if (!token) {
+      setTimeout(() => router.replace('/'), 0);
+    }
+  };
+  verificar();
+}, []);
 
 const Chat = () => {
   const [messages, setMessages] = useState<Message[]>([

@@ -1,9 +1,8 @@
-import * as mysql from 'mysql2';
+import * as mysql from 'mysql2/promise';
 import dotenv from 'dotenv';
 
 dotenv.config();
 
-// Criamos o pool de conexões para gerenciar reconexões de forma estável.
 const pool = mysql.createPool({
   host: process.env.DB_HOST || 'localhost',
   user: process.env.DB_USER || 'root',
@@ -12,18 +11,19 @@ const pool = mysql.createPool({
   port: Number(process.env.DB_PORT) || 3306,
   waitForConnections: true,
   connectionLimit: 10,
-  queueLimit: 0
+  queueLimit: 0,
 });
 
-pool.getConnection((err, conn) => {
-  if (err) {
+pool.getConnection()
+  .then(conn => {
+    console.log('✅ Conectado ao MySQL!');
+    conn.release();
+  })
+  .catch(err => {
     console.error('❌ Erro ao conectar ao MySQL!');
-    console.error('Código do erro:', err.code); // Ex: 'ECONNREFUSED'
+    console.error('Código do erro:', err.code);
     console.error('Mensagem completa:', err.message);
     process.exit(1);
-  }
-  console.log('✅ Conectado ao MySQL via Pool!');
-  conn.release();
-});
+  });
 
 export default pool;

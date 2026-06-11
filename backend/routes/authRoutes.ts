@@ -1,7 +1,6 @@
 import express from 'express';
 import { login, register, editarNome, alterarSenha, getPerfil } from '../controllers/authController';
 import { authMiddleware } from '../middleware/authMiddleware';
-import { chat } from '../controllers/chatController';
 
 const router = express.Router();
 
@@ -19,8 +18,5 @@ router.put('/perfil', authMiddleware, editarNome);
 
 // Alterar senha
 router.put('/senha', authMiddleware, alterarSenha);
-
-// Rota do chatController
-router.post('/chat', authMiddleware, chat);
 
 export default router;
