@@ -6,8 +6,10 @@ import {
   TouchableOpacity,
 } from 'react-native';
 import { useRouter } from 'expo-router';
-
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import axios from 'axios';
 import { getQuizQuestions } from '../services/quizService';
+import { ENDPOINTS } from '../constants/Config';
 
 export default function Quiz() {
   const router = useRouter();
@@ -27,9 +29,25 @@ export default function Quiz() {
 
   const perguntaAtual = perguntas[indiceAtual];
 
+  // Envia os acertos ao backend ao finalizar o quiz
+  async function registrarAcertos(totalAcertos: number) {
+    try {
+      const usuario_id = await AsyncStorage.getItem('usuario_id');
+      if (!usuario_id) return;
+
+      await axios.post(`${ENDPOINTS.CONQUISTAS}/acerto`, {
+        usuario_id: Number(usuario_id),
+        acertos: totalAcertos,
+      });
+    } catch (e) {    }
+  }
+
   function responder(opcao: string) {
+    let novaPontuacao = pontuacao;
+
     if (opcao === perguntaAtual.resposta) {
-      setPontuacao((prev) => prev + 1);
+      novaPontuacao = pontuacao + 1;
+      setPontuacao(novaPontuacao);
     }
 
     const proximaPergunta = indiceAtual + 1;
@@ -37,6 +55,7 @@ export default function Quiz() {
     if (proximaPergunta < perguntas.length) {
       setIndiceAtual(proximaPergunta);
     } else {
+      registrarAcertos(novaPontuacao); // envia acertos ao backend
       setFinalizado(true);
     }
   }
@@ -70,7 +89,6 @@ export default function Quiz() {
 
   return (
     <View style={styles.container}>
-      {/* Cabeçalho */}
       <TouchableOpacity onPress={() => router.back()} style={styles.voltarBtn}>
         <Text style={styles.voltarText}>← Voltar</Text>
       </TouchableOpacity>

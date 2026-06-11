@@ -24,7 +24,7 @@ useEffect(() => {
         <View style={styles.mainGrid}>
           <Pressable onPress={() => router.push('/Chat')}><Image style={styles.iconesHome} source={require('../assets/images/chat.png')}/></Pressable>
           <Pressable onPress={() => router.push('/Perfil')}><Image style={styles.iconesHome} source={require('../assets/images/perfil.png')}/></Pressable>
-          <View><Image style={styles.iconesHome} source={require('../assets/images/conquistas.png')}/></View>
+          <Pressable onPress={() => router.push('/Conquistas')}><Image style={styles.iconesHome} source={require('../assets/images/conquistas.png')}/></Pressable>
           <View><Image style={styles.iconesHome} source={require('../assets/images/configuracoes.png')}/></View>
           <View><Image style={styles.iconesHome} source={require('../assets/images/calendario.png')}/></View>
           <Pressable onPress={() => router.push('/Quiz')}><Image style={styles.iconesHome} source={require('../assets/images/quiz.png')}/></Pressable>
