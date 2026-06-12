@@ -99,8 +99,12 @@ export const login = async (req: Request, res: Response) => {
 // EDITAR NOME
 
 export const editarNome = async (req: Request, res: Response) => {
-  const { id } = req.params;
+  const id = (req as any).user?.id;
   const { nome } = req.body;
+
+  if (!id) {
+    return res.status(401).json({ error: 'Não autenticado' });
+  }
 
   if (!nome || !nome.trim()) {
     return res.status(400).json({ error: 'O nome não pode estar vazio' });
@@ -123,8 +127,12 @@ export const editarNome = async (req: Request, res: Response) => {
 // ALTERAR SENHA
 
 export const alterarSenha = async (req: Request, res: Response) => {
-  const { id } = req.params;
+  const id = (req as any).user?.id;
   const { senhaAtual, novaSenha } = req.body;
+
+  if (!id) {
+    return res.status(401).json({ error: 'Não autenticado' });
+  }
 
   if (!senhaAtual || !novaSenha) {
     return res.status(400).json({ error: 'Todos os campos são obrigatórios' });
@@ -164,6 +172,51 @@ export const alterarSenha = async (req: Request, res: Response) => {
 
   } catch (err) {
     console.error('Erro ao alterar senha:', err);
+    return res.status(500).json({ error: 'Erro no servidor' });
+  }
+};
+
+// BUSCAR DADOS DO PERFIL E ESTATÍSTICAS
+export const getPerfil = async (req: Request, res: Response) => {
+  const usuarioId = (req as any).user?.id;
+
+  if (!usuarioId) {
+    return res.status(401).json({ error: 'Não autenticado' });
+  }
+
+  try {
+    const [userRows]: any = await pool.query(
+      'SELECT nome, email FROM usuarios WHERE id = ?',
+      [usuarioId]
+    );
+
+    if (userRows.length === 0) {
+      return res.status(404).json({ error: 'Usuário não encontrado' });
+    }
+
+    const user = userRows[0];
+
+    const [statsRows]: any = await pool.query(
+      `SELECT 
+        COUNT(*) as totalRespondidas, 
+        SUM(CASE WHEN correta = 1 THEN 1 ELSE 0 END) as totalCorretas 
+      FROM respostas_usuarios 
+      WHERE usuario_id = ?`,
+      [usuarioId]
+    );
+
+    const stats = statsRows[0];
+    const totalRespondidas = stats.totalRespondidas || 0;
+    const totalCorretas = stats.totalCorretas || 0;
+    const precisao = totalRespondidas > 0 ? Math.round((totalCorretas / totalRespondidas) * 100) : 0;
+
+    return res.json({
+      user: { nome: user.nome, email: user.email },
+      stats: { totalRespondidas, totalCorretas, precisao }
+    });
+
+  } catch (err) {
+    console.error('Erro ao buscar perfil:', err);
     return res.status(500).json({ error: 'Erro no servidor' });
   }
 };

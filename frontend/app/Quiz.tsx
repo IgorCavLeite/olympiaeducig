@@ -1,215 +1,485 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   View,
   Text,
   StyleSheet,
   TouchableOpacity,
+  ScrollView,
+  ActivityIndicator,
+  Alert
 } from 'react-native';
 import { useRouter } from 'expo-router';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import axios from 'axios';
-import { getQuizQuestions } from '../services/quizService';
 import { ENDPOINTS } from '../constants/Config';
+
+interface Questao {
+  id: number;
+  enunciado: string;
+  alternativa_a: string;
+  alternativa_b: string;
+  alternativa_c: string;
+  alternativa_d: string;
+  alternativa_e: string;
+  categoria: string;
+  ano: number;
+  fase: number;
+}
 
 export default function Quiz() {
   const router = useRouter();
 
-  const [perguntas] = useState(() => getQuizQuestions());
-  const [indiceAtual, setIndiceAtual] = useState(0);
-  const [pontuacao, setPontuacao] = useState(0);
-  const [finalizado, setFinalizado] = useState(false);
+  // Estados de Fluxo
+  const [faseQuiz, setFaseQuiz] = useState<'lobby' | 'jogando' | 'resultado'>('lobby');
+  const [carregando, setCarregando] = useState(false);
 
-  if (perguntas.length === 0) {
-    return (
-      <View style={styles.container}>
-        <Text style={styles.erro}>Nenhuma pergunta encontrada.</Text>
-      </View>
-    );
-  }
+  // Filtros (Lobby)
+  const [anosDisponiveis] = useState<string[]>(['Todos', '2020', '2021']);
+  const [anoSelecionado, setAnoSelecionado] = useState<string>('Todos');
+  const [categorias, setCategorias] = useState<string[]>([]);
+  const [categoriaSelecionada, setCategoriaSelecionada] = useState<string>('Todas');
+  const [limiteQuestoes, setLimiteQuestoes] = useState<number>(10);
 
-  const perguntaAtual = perguntas[indiceAtual];
+  // Questões e Progresso (Jogando)
+  const [questoes, setQuestoes] = useState<Questao[]>([]);
+  const [indiceAtual, setIndiceAtual] = useState<number>(0);
+  const [alternativaSelecionada, setAlternativaSelecionada] = useState<string | null>(null);
 
-  // Envia os acertos ao backend ao finalizar o quiz
-  async function registrarAcertos(totalAcertos: number) {
+  // Resposta submetida
+  const [respostaConfirmada, setRespostaConfirmada] = useState(false);
+  const [explicacaoIA, setExplicacaoIA] = useState<string>('');
+  const [alternativaCorreta, setAlternativaCorreta] = useState<string>('');
+  const [acertouQuestao, setAcertouQuestao] = useState<boolean>(false);
+  const [totalAcertos, setTotalAcertos] = useState<number>(0);
+
+  // Carrega categorias ao iniciar
+  useEffect(() => {
+    carregarCategorias();
+  }, []);
+
+  // Registra acertos nas conquistas ao finalizar o quiz
+  useEffect(() => {
+    if (faseQuiz === 'resultado') {
+      registrarAcertosConquistas(totalAcertos);
+    }
+  }, [faseQuiz]);
+
+  const carregarCategorias = async () => {
+    try {
+      const token = await AsyncStorage.getItem('token');
+      if (!token) return;
+
+      const response = await axios.get(`${ENDPOINTS.QUIZ}/categorias`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      setCategorias(['Todas', ...response.data]);
+    } catch (error) {
+      console.warn('Erro ao carregar categorias:', error);
+    }
+  };
+
+  // Registra acertos no backend de conquistas
+  const registrarAcertosConquistas = async (acertos: number) => {
     try {
       const usuario_id = await AsyncStorage.getItem('usuario_id');
-      if (!usuario_id) return;
+      if (!usuario_id || acertos === 0) return;
 
       await axios.post(`${ENDPOINTS.CONQUISTAS}/acerto`, {
         usuario_id: Number(usuario_id),
-        acertos: totalAcertos,
+        acertos,
       });
-    } catch (e) {    }
-  }
-
-  function responder(opcao: string) {
-    let novaPontuacao = pontuacao;
-
-    if (opcao === perguntaAtual.resposta) {
-      novaPontuacao = pontuacao + 1;
-      setPontuacao(novaPontuacao);
+    } catch (e) {
+      // Silencioso — não impede o fluxo do quiz
     }
+  };
 
-    const proximaPergunta = indiceAtual + 1;
+  // INICIAR SIMULADO
+  const handleIniciarQuiz = async () => {
+    setCarregando(true);
+    try {
+      const token = await AsyncStorage.getItem('token');
+      if (!token) {
+        Alert.alert('Erro', 'Você precisa estar logado para fazer o quiz');
+        router.replace('/LoginScreen');
+        return;
+      }
 
-    if (proximaPergunta < perguntas.length) {
-      setIndiceAtual(proximaPergunta);
+      const params: any = { limite: limiteQuestoes };
+      if (anoSelecionado !== 'Todos') params.ano = anoSelecionado;
+      if (categoriaSelecionada !== 'Todas') params.categoria = categoriaSelecionada;
+
+      const response = await axios.get(`${ENDPOINTS.QUIZ}/questoes`, {
+        headers: { Authorization: `Bearer ${token}` },
+        params
+      });
+
+      if (response.data.length === 0) {
+        Alert.alert('Aviso', 'Nenhuma questão encontrada com os filtros selecionados.');
+        return;
+      }
+
+      setQuestoes(response.data);
+      setIndiceAtual(0);
+      setAlternativaSelecionada(null);
+      setRespostaConfirmada(false);
+      setTotalAcertos(0);
+      setFaseQuiz('jogando');
+    } catch (error: any) {
+      const msg = error.response?.data?.error || 'Não foi possível carregar as questões.';
+      Alert.alert('Erro', msg);
+    } finally {
+      setCarregando(false);
+    }
+  };
+
+  // CONFIRMAR RESPOSTA
+  const handleConfirmarResposta = async () => {
+    if (!alternativaSelecionada || respostaConfirmada) return;
+
+    setCarregando(true);
+    try {
+      const token = await AsyncStorage.getItem('token');
+      const questaoAtual = questoes[indiceAtual];
+
+      const response = await axios.post(
+        `${ENDPOINTS.QUIZ}/responder`,
+        {
+          questao_id: questaoAtual.id,
+          resposta_escolhida: alternativaSelecionada
+        },
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+
+      const { correta, resposta_correta, explicacao } = response.data;
+      setAcertouQuestao(correta);
+      setAlternativaCorreta(resposta_correta);
+      setExplicacaoIA(explicacao || 'Sem explicação disponível.');
+      setRespostaConfirmada(true);
+
+      if (correta) {
+        setTotalAcertos(prev => prev + 1);
+      }
+    } catch (error: any) {
+      Alert.alert('Erro', 'Falha ao processar a resposta.');
+    } finally {
+      setCarregando(false);
+    }
+  };
+
+  // PRÓXIMA QUESTÃO
+  const handleProximaQuestao = () => {
+    setAlternativaSelecionada(null);
+    setRespostaConfirmada(false);
+    setExplicacaoIA('');
+    setAlternativaCorreta('');
+
+    if (indiceAtual + 1 < questoes.length) {
+      setIndiceAtual(prev => prev + 1);
     } else {
-      registrarAcertos(novaPontuacao); // envia acertos ao backend
-      setFinalizado(true);
+      setFaseQuiz('resultado');
     }
-  }
+  };
 
-  if (finalizado) {
+  // VOLTAR AO LOBBY
+  const handleVoltarLobby = () => {
+    setFaseQuiz('lobby');
+    setQuestoes([]);
+    carregarCategorias();
+  };
+
+  // ─── TELA LOBBY ───────────────────────────────────────────────────────────
+
+  const renderLobby = () => (
+    <ScrollView contentContainerStyle={styles.lobbyContent} showsVerticalScrollIndicator={false}>
+      <Text style={styles.lobbySubtitulo}>Prepare-se para a Olimpíada Brasileira de Biologia (OBB)</Text>
+
+      <View style={styles.secaoFiltro}>
+        <Text style={styles.filtroLabel}>Selecionar Prova (Ano):</Text>
+        <View style={styles.grupoBotoes}>
+          {anosDisponiveis.map(ano => (
+            <TouchableOpacity
+              key={ano}
+              style={[styles.botaoOpcao, anoSelecionado === ano && styles.botaoOpcaoAtivo]}
+              onPress={() => setAnoSelecionado(ano)}
+            >
+              <Text style={[styles.textoOpcao, anoSelecionado === ano && styles.textoOpcaoAtivo]}>
+                {ano === 'Todos' ? 'Qualquer' : ano}
+              </Text>
+            </TouchableOpacity>
+          ))}
+        </View>
+      </View>
+
+      <View style={styles.secaoFiltro}>
+        <Text style={styles.filtroLabel}>Filtrar por Tema:</Text>
+        <View style={styles.grupoBotoesFlex}>
+          {(categorias.length > 0 ? categorias : ['Todas']).map(cat => (
+            <TouchableOpacity
+              key={cat}
+              style={[styles.botaoBadge, categoriaSelecionada === cat && styles.botaoBadgeAtivo]}
+              onPress={() => setCategoriaSelecionada(cat)}
+            >
+              <Text style={[styles.textoBadge, categoriaSelecionada === cat && styles.textoBadgeAtivo]}>
+                {cat}
+              </Text>
+            </TouchableOpacity>
+          ))}
+        </View>
+      </View>
+
+      <View style={styles.secaoFiltro}>
+        <Text style={styles.filtroLabel}>Quantidade de Questões:</Text>
+        <View style={styles.grupoBotoes}>
+          {[5, 10, 15, 20].map(num => (
+            <TouchableOpacity
+              key={num}
+              style={[styles.botaoOpcao, limiteQuestoes === num && styles.botaoOpcaoAtivo]}
+              onPress={() => setLimiteQuestoes(num)}
+            >
+              <Text style={[styles.textoOpcao, limiteQuestoes === num && styles.textoOpcaoAtivo]}>
+                {num}
+              </Text>
+            </TouchableOpacity>
+          ))}
+        </View>
+      </View>
+
+      <TouchableOpacity
+        style={[styles.botaoPrincipal, carregando && styles.botaoDesabilitado]}
+        onPress={handleIniciarQuiz}
+        disabled={carregando}
+      >
+        {carregando ? (
+          <ActivityIndicator color="#fff" />
+        ) : (
+          <Text style={styles.textoBotaoPrincipal}>Iniciar Simulado</Text>
+        )}
+      </TouchableOpacity>
+    </ScrollView>
+  );
+
+  // ─── TELA JOGANDO ─────────────────────────────────────────────────────────
+
+  const renderJogando = () => {
+    if (questoes.length === 0) return null;
+
+    const questao = questoes[indiceAtual];
+    const totalQuestoes = questoes.length;
+    const progresso = (indiceAtual + 1) / totalQuestoes;
+
+    const getEstiloAlternativa = (letra: string) => {
+      if (!respostaConfirmada) {
+        return alternativaSelecionada === letra
+          ? [styles.cardAlternativa, styles.cardAlternativaSelecionado]
+          : styles.cardAlternativa;
+      }
+      if (letra === alternativaCorreta) return [styles.cardAlternativa, styles.cardAlternativaCorreto];
+      if (alternativaSelecionada === letra && !acertouQuestao) return [styles.cardAlternativa, styles.cardAlternativaErrado];
+      return styles.cardAlternativa;
+    };
+
+    const getEstiloTextoAlternativa = (letra: string) => {
+      if (!respostaConfirmada) {
+        return alternativaSelecionada === letra
+          ? [styles.textoAlternativa, styles.textoAlternativaSelecionado]
+          : styles.textoAlternativa;
+      }
+      if (letra === alternativaCorreta) return [styles.textoAlternativa, styles.textoAlternativaCorreto];
+      if (alternativaSelecionada === letra && !acertouQuestao) return [styles.textoAlternativa, styles.textoAlternativaErrado];
+      return styles.textoAlternativa;
+    };
+
     return (
-      <View style={styles.container}>
-        <Text style={styles.tituloFinal}>Quiz Finalizado 🎉</Text>
+      <ScrollView contentContainerStyle={styles.jogandoContent} showsVerticalScrollIndicator={false}>
+        <View style={styles.containerProgresso}>
+          <View style={styles.barraFundoProgresso}>
+            <View style={[styles.barraAtivaProgresso, { width: `${progresso * 100}%` }]} />
+          </View>
+          <View style={styles.infoProgresso}>
+            <Text style={styles.textoProgresso}>Questão {indiceAtual + 1} de {totalQuestoes}</Text>
+            <Text style={styles.textoFiltrosQuestao}>{questao.categoria} • OBB {questao.ano}</Text>
+          </View>
+        </View>
 
-        <Text style={styles.resultado}>
-          Você acertou {pontuacao} de {perguntas.length}
-        </Text>
+        <View style={styles.cardEnunciado}>
+          <Text style={styles.textoEnunciado}>{questao.enunciado}</Text>
+        </View>
 
-        <TouchableOpacity
-          style={styles.botao}
-          onPress={() => {
-            setIndiceAtual(0);
-            setPontuacao(0);
-            setFinalizado(false);
-          }}
-        >
-          <Text style={styles.textoBotao}>Jogar Novamente</Text>
+        <View style={styles.containerAlternativas}>
+          {[
+            { letra: 'A', texto: questao.alternativa_a },
+            { letra: 'B', texto: questao.alternativa_b },
+            { letra: 'C', texto: questao.alternativa_c },
+            { letra: 'D', texto: questao.alternativa_d },
+            { letra: 'E', texto: questao.alternativa_e }
+          ].map(item => (
+            <TouchableOpacity
+              key={item.letra}
+              style={getEstiloAlternativa(item.letra)}
+              onPress={() => !respostaConfirmada && setAlternativaSelecionada(item.letra)}
+              disabled={respostaConfirmada}
+              activeOpacity={0.7}
+            >
+              <View style={styles.letraBadge}>
+                <Text style={styles.letraTexto}>{item.letra}</Text>
+              </View>
+              <Text style={getEstiloTextoAlternativa(item.letra)}>{item.texto}</Text>
+            </TouchableOpacity>
+          ))}
+        </View>
+
+        {respostaConfirmada && (
+          <View style={[styles.cardExplicacao, acertouQuestao ? styles.cardExplicacaoCorreto : styles.cardExplicacaoErrado]}>
+            <Text style={styles.tituloExplicacao}>
+              {acertouQuestao ? '🎉 Resposta Correta!' : '❌ Resposta Incorreta'}
+            </Text>
+            <Text style={styles.textoExplicacao}>{explicacaoIA}</Text>
+          </View>
+        )}
+
+        {!respostaConfirmada ? (
+          <TouchableOpacity
+            style={[styles.botaoPrincipal, !alternativaSelecionada && styles.botaoDesabilitado]}
+            onPress={handleConfirmarResposta}
+            disabled={!alternativaSelecionada || carregando}
+          >
+            {carregando ? (
+              <ActivityIndicator color="#fff" />
+            ) : (
+              <Text style={styles.textoBotaoPrincipal}>Confirmar Resposta</Text>
+            )}
+          </TouchableOpacity>
+        ) : (
+          <TouchableOpacity style={styles.botaoPrincipal} onPress={handleProximaQuestao}>
+            <Text style={styles.textoBotaoPrincipal}>
+              {indiceAtual + 1 < totalQuestoes ? 'Próxima Questão →' : 'Ver Resultados'}
+            </Text>
+          </TouchableOpacity>
+        )}
+      </ScrollView>
+    );
+  };
+
+  // ─── TELA RESULTADO ───────────────────────────────────────────────────────
+
+  const renderResultado = () => {
+    const totalQuestoes = questoes.length;
+    const porcentagemAcertos = Math.round((totalAcertos / totalQuestoes) * 100);
+
+    let feedbackMsg = 'Continue estudando! Pratique mais simulados para evoluir.';
+    if (porcentagemAcertos >= 80) {
+      feedbackMsg = 'Espetacular! Você está muito bem preparado para a olimpíada. Darwin ficaria orgulhoso!';
+    } else if (porcentagemAcertos >= 50) {
+      feedbackMsg = 'Bom desempenho! Revise os tópicos errados e tente melhorar no próximo.';
+    }
+
+    return (
+      <View style={styles.resultadoContent}>
+        <Text style={styles.resultadoTitulo}>Simulado Concluído!</Text>
+
+        <View style={styles.resultadoCirculo}>
+          <Text style={styles.resultadoScore}>{porcentagemAcertos}%</Text>
+          <Text style={styles.resultadoScoreDetalhe}>{totalAcertos} de {totalQuestoes} acertos</Text>
+        </View>
+
+        <Text style={styles.resultadoFeedback}>{feedbackMsg}</Text>
+
+        <TouchableOpacity style={styles.botaoPrincipal} onPress={handleVoltarLobby}>
+          <Text style={styles.textoBotaoPrincipal}>Novo Simulado</Text>
         </TouchableOpacity>
 
-        <TouchableOpacity style={styles.botaoVoltar} onPress={() => router.back()}>
-          <Text style={styles.textoBotaoVoltar}>Voltar ao Início</Text>
+        <TouchableOpacity style={[styles.botaoPrincipal, styles.botaoSecundario]} onPress={() => router.push('/Home')}>
+          <Text style={styles.textoBotaoSecundario}>Voltar ao Menu Principal</Text>
         </TouchableOpacity>
       </View>
     );
-  }
+  };
 
   return (
     <View style={styles.container}>
-      <TouchableOpacity onPress={() => router.back()} style={styles.voltarBtn}>
-        <Text style={styles.voltarText}>← Voltar</Text>
-      </TouchableOpacity>
+      <View style={styles.header}>
+        {faseQuiz === 'lobby' ? (
+          <TouchableOpacity onPress={() => router.back()} style={styles.voltarBtn}>
+            <Text style={styles.voltarText}>← Home</Text>
+          </TouchableOpacity>
+        ) : (
+          <TouchableOpacity onPress={handleVoltarLobby} style={styles.voltarBtn}>
+            <Text style={styles.voltarText}>← Abortar</Text>
+          </TouchableOpacity>
+        )}
+        <Text style={styles.headerTitle}>SIMULADO QUIZ</Text>
+        <Text style={styles.headerSubtitle}>Tutor OlympIA</Text>
+      </View>
 
-      <Text style={styles.materia}>{perguntaAtual.materia}</Text>
-
-      <Text style={styles.dificuldade}>
-        Dificuldade: {perguntaAtual.dificuldade}
-      </Text>
-
-      <Text style={styles.contador}>
-        Pergunta {indiceAtual + 1} de {perguntas.length}
-      </Text>
-
-      <Text style={styles.pergunta}>{perguntaAtual.pergunta}</Text>
-
-      {perguntaAtual.opcoes.map((opcao: string) => (
-        <TouchableOpacity
-          key={opcao}
-          style={styles.botao}
-          onPress={() => responder(opcao)}
-        >
-          <Text style={styles.textoBotao}>{opcao}</Text>
-        </TouchableOpacity>
-      ))}
+      {faseQuiz === 'lobby' && renderLobby()}
+      {faseQuiz === 'jogando' && renderJogando()}
+      {faseQuiz === 'resultado' && renderResultado()}
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#0f172a',
-    padding: 24,
-    justifyContent: 'center',
-  },
+  container: { flex: 1, backgroundColor: '#cceaff' },
+  header: { backgroundColor: '#024084', paddingTop: 50, paddingBottom: 16, paddingHorizontal: 20 },
+  voltarBtn: { marginBottom: 6 },
+  voltarText: { color: '#e4b93f', fontSize: 14, fontWeight: 'bold' },
+  headerTitle: { color: '#fff', fontSize: 22, fontWeight: 'bold', textAlign: 'center' },
+  headerSubtitle: { color: '#e4b93f', fontSize: 12, textAlign: 'center', marginTop: 2 },
 
-  voltarBtn: {
-    position: 'absolute',
-    top: 52,
-    left: 24,
-  },
+  lobbyContent: { padding: 20, paddingBottom: 40 },
+  lobbySubtitulo: { fontSize: 16, textAlign: 'center', color: '#024084', marginBottom: 25, fontWeight: '500' },
+  secaoFiltro: { marginBottom: 24 },
+  filtroLabel: { fontSize: 15, fontWeight: 'bold', color: '#024084', marginBottom: 10 },
+  grupoBotoes: { flexDirection: 'row', gap: 10 },
+  grupoBotoesFlex: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
+  botaoOpcao: { flex: 1, backgroundColor: '#fff', paddingVertical: 12, borderRadius: 10, alignItems: 'center', borderWidth: 1, borderColor: '#dde3ec' },
+  botaoOpcaoAtivo: { backgroundColor: '#024084', borderColor: '#024084' },
+  textoOpcao: { color: '#333', fontWeight: 'bold', fontSize: 14 },
+  textoOpcaoAtivo: { color: '#fff' },
+  botaoBadge: { backgroundColor: '#fff', paddingHorizontal: 14, paddingVertical: 8, borderRadius: 20, borderWidth: 1, borderColor: '#dde3ec' },
+  botaoBadgeAtivo: { backgroundColor: '#024084', borderColor: '#024084' },
+  textoBadge: { color: '#555', fontSize: 13, fontWeight: '600' },
+  textoBadgeAtivo: { color: '#fff' },
 
-  voltarText: {
-    color: '#e4b93f',
-    fontSize: 14,
-    fontWeight: 'bold',
-  },
+  jogandoContent: { padding: 16, paddingBottom: 40 },
+  containerProgresso: { marginBottom: 16 },
+  barraFundoProgresso: { height: 6, backgroundColor: '#fff', borderRadius: 3, overflow: 'hidden', marginBottom: 8 },
+  barraAtivaProgresso: { height: '100%', backgroundColor: '#024084' },
+  infoProgresso: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
+  textoProgresso: { fontSize: 13, fontWeight: 'bold', color: '#024084' },
+  textoFiltrosQuestao: { fontSize: 11, color: '#666' },
 
-  materia: {
-    color: '#38bdf8',
-    fontSize: 18,
-    fontWeight: 'bold',
-    marginBottom: 8,
-  },
+  cardEnunciado: { backgroundColor: '#fff', borderRadius: 12, padding: 18, marginBottom: 16, borderWidth: 1, borderColor: '#dde3ec' },
+  textoEnunciado: { fontSize: 15, color: '#1a1a2e', lineHeight: 22, fontWeight: '500' },
 
-  dificuldade: {
-    color: '#cbd5e1',
-    fontSize: 16,
-    marginBottom: 10,
-  },
+  containerAlternativas: { gap: 10, marginBottom: 16 },
+  cardAlternativa: { flexDirection: 'row', backgroundColor: '#fff', padding: 14, borderRadius: 12, borderWidth: 1, borderColor: '#dde3ec', alignItems: 'center', gap: 12 },
+  cardAlternativaSelecionado: { borderColor: '#024084', backgroundColor: '#ebf5fb' },
+  cardAlternativaCorreto: { borderColor: '#27ae60', backgroundColor: '#e8f8f5' },
+  cardAlternativaErrado: { borderColor: '#c0392b', backgroundColor: '#fde8e8' },
+  letraBadge: { width: 30, height: 30, borderRadius: 15, backgroundColor: '#024084', justifyContent: 'center', alignItems: 'center' },
+  letraTexto: { color: '#fff', fontWeight: 'bold', fontSize: 13 },
+  textoAlternativa: { flex: 1, fontSize: 14, color: '#1a1a2e', lineHeight: 20 },
+  textoAlternativaSelecionado: { color: '#024084', fontWeight: 'bold' },
+  textoAlternativaCorreto: { color: '#27ae60', fontWeight: 'bold' },
+  textoAlternativaErrado: { color: '#c0392b', fontWeight: 'bold' },
 
-  contador: {
-    color: '#94a3b8',
-    fontSize: 16,
-    marginBottom: 20,
-  },
+  cardExplicacao: { padding: 16, borderRadius: 12, marginBottom: 16, borderWidth: 1 },
+  cardExplicacaoCorreto: { backgroundColor: '#e8f8f5', borderColor: '#27ae60' },
+  cardExplicacaoErrado: { backgroundColor: '#fdf2e9', borderColor: '#e67e22' },
+  tituloExplicacao: { fontSize: 15, fontWeight: 'bold', marginBottom: 6 },
+  textoExplicacao: { fontSize: 13, lineHeight: 18, color: '#444' },
 
-  pergunta: {
-    color: '#ffffff',
-    fontSize: 28,
-    fontWeight: 'bold',
-    marginBottom: 30,
-  },
+  botaoPrincipal: { backgroundColor: '#024084', padding: 15, borderRadius: 12, alignItems: 'center', marginVertical: 10 },
+  botaoDesabilitado: { backgroundColor: '#a0b0c8' },
+  textoBotaoPrincipal: { color: '#fff', fontSize: 16, fontWeight: 'bold' },
+  botaoSecundario: { backgroundColor: 'transparent', borderWidth: 2, borderColor: '#024084' },
+  textoBotaoSecundario: { color: '#024084', fontSize: 16, fontWeight: 'bold' },
 
-  botao: {
-    backgroundColor: '#2563eb',
-    padding: 18,
-    borderRadius: 14,
-    marginBottom: 15,
-  },
-
-  textoBotao: {
-    color: '#ffffff',
-    fontSize: 18,
-    textAlign: 'center',
-    fontWeight: 'bold',
-  },
-
-  botaoVoltar: {
-    marginTop: 8,
-    padding: 16,
-    borderRadius: 14,
-    borderWidth: 1,
-    borderColor: '#334155',
-  },
-
-  textoBotaoVoltar: {
-    color: '#94a3b8',
-    fontSize: 16,
-    textAlign: 'center',
-  },
-
-  tituloFinal: {
-    color: '#ffffff',
-    fontSize: 32,
-    fontWeight: 'bold',
-    textAlign: 'center',
-    marginBottom: 20,
-  },
-
-  resultado: {
-    color: '#ffffff',
-    fontSize: 24,
-    textAlign: 'center',
-    marginBottom: 30,
-  },
-
-  erro: {
-    color: '#ffffff',
-    fontSize: 20,
-    textAlign: 'center',
-  },
+  resultadoContent: { flex: 1, justifyContent: 'center', alignItems: 'center', padding: 24, gap: 20 },
+  resultadoTitulo: { fontSize: 24, fontWeight: 'bold', color: '#024084', textAlign: 'center' },
+  resultadoCirculo: { width: 180, height: 180, borderRadius: 90, backgroundColor: '#fff', borderWidth: 6, borderColor: '#e4b93f', justifyContent: 'center', alignItems: 'center' },
+  resultadoScore: { fontSize: 44, fontWeight: 'bold', color: '#024084' },
+  resultadoScoreDetalhe: { fontSize: 13, color: '#666', marginTop: 4 },
+  resultadoFeedback: { fontSize: 15, textAlign: 'center', color: '#024084', paddingHorizontal: 12, lineHeight: 22, fontWeight: '500' },
 });

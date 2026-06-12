@@ -63,9 +63,13 @@ const Chat = () => {
         .filter((m) => m.id !== 'welcome')
         .map((m) => ({ sender: m.sender, text: m.text }));
 
+      const token = await AsyncStorage.getItem('token');
       const response = await fetch(ENDPOINTS.CHAT, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
         body: JSON.stringify({ message: texto, history }),
       });
 

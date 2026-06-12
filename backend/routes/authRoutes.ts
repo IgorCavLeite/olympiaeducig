@@ -1,6 +1,6 @@
 import express from 'express';
-import { login, register, editarNome, alterarSenha } from '../controllers/authController';
-import { autenticar } from '../middleware/authMiddleware';
+import { login, register, editarNome, alterarSenha, getPerfil } from '../controllers/authController';
+import { authMiddleware } from '../middleware/authMiddleware';
 
 const router = express.Router();
 
@@ -10,10 +10,13 @@ router.post('/register', register);
 // Rota de login
 router.post('/login', login);
 
+// Obter dados do perfil (com estatísticas)
+router.get('/perfil', authMiddleware, getPerfil);
+
 // Editar nome
-router.put('/perfil/:id', autenticar, editarNome);
+router.put('/perfil', authMiddleware, editarNome);
 
 // Alterar senha
-router.put('/senha/:id', autenticar, alterarSenha);
+router.put('/senha', authMiddleware, alterarSenha);
 
 export default router;

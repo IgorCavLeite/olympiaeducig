@@ -29,7 +29,7 @@ export default function Login() {
       console.log('Login realizado com sucesso! Token:', token);
       router.push('/Home');
     } catch (error: any) {
-      const mensagemErro = error.response?.data?.error || 'Não foi possível conectar ao servidor';
+      const mensagemErro = error.response?.data?.error || error.response?.data?.message || 'Não foi possível conectar ao servidor';
       Alert.alert('Falha no Login', mensagemErro);
     } finally {
       setCarregando(false);

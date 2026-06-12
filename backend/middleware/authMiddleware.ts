@@ -2,12 +2,19 @@ import { Request, Response, NextFunction } from 'express';
 import * as jwt from 'jsonwebtoken';
 import jwtConfig from '../config/jwtConfig';
 
-interface TokenPayload {
-  id: number;
-  email: string;
+// Extende o tipo Request para incluir o usuário autenticado
+export interface AuthenticatedRequest extends Request {
+  user?: {
+    id: number;
+    email: string;
+  };
 }
 
-export const autenticar = (req: Request, res: Response, next: NextFunction) => {
+export const authMiddleware = (
+  req: AuthenticatedRequest,
+  res: Response,
+  next: NextFunction
+) => {
   const authHeader = req.headers.authorization;
 
   if (!authHeader || !authHeader.startsWith('Bearer ')) {
@@ -17,14 +24,10 @@ export const autenticar = (req: Request, res: Response, next: NextFunction) => {
   const token = authHeader.split(' ')[1];
 
   try {
-    const decoded = jwt.verify(token, jwtConfig.secret) as TokenPayload;
-
-    if (decoded.id !== Number(req.params.id)) {
-      return res.status(403).json({ error: 'Acesso negado' });
-    }
-
+    const decoded = jwt.verify(token, jwtConfig.secret) as { id: number; email: string };
+    req.user = decoded;
     next();
-  } catch {
+  } catch (error) {
     return res.status(401).json({ error: 'Token inválido ou expirado' });
   }
 };
