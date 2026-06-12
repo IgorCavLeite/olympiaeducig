@@ -31,7 +31,11 @@
   "registerButton": "Registrarse",
   "registering": "Registrando...",
   "alreadyAccount": "¿Ya tienes cuenta? Inicia sesión",
+<<<<<<< HEAD
   "requiredFields": "Todos los campos son obligatorios",
+=======
+  "requiredFields": "Todos os campos são obrigatórios",
+>>>>>>> 6c53f0bd9cf5e03109b7fb61d370ab7a4ea596ce
   "success": "Éxito",
   "accountCreated": "¡Cuenta creada con éxito!",
   "registerFailed": "Error de Registro",
@@ -54,9 +58,17 @@
   "passwordMismatch": "Las contraseñas no coinciden",
   "logoutConfirm": "¿Seguro que deseas salir?",
   "passwordChangeError": "No fue posible cambiar la contraseña.",
+<<<<<<< HEAD
     "welcomeMessage": "¡Hola! Soy OlympIA, tu tutor para olimpiadas académicas.\n¡Puedo ayudarte con Biología!\n\n¿Qué tema estudiaremos hoy?",
+=======
+  "welcomeMessage": "¡Hola! Soy OlympIA, tu tutor para olimpiadas académicas.\n¡Puedo ayudarte con Biología!\n\n¿Qué tema estudiaremos hoy?",
+>>>>>>> 6c53f0bd9cf5e03109b7fb61d370ab7a4ea596ce
   "connectionError": "No fue posible conectar con el servidor.",
   "thinking": "OlympIA está pensando...",
   "typeQuestion": "Escribe tu pregunta...",
   "olympiadTutor": "Tutor de Olimpiadas"
+<<<<<<< HEAD
 }
+=======
+}
+>>>>>>> 6c53f0bd9cf5e03109b7fb61d370ab7a4ea596ce

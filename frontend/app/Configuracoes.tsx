@@ -1,28 +1,64 @@
 import React, { useContext } from 'react';
+<<<<<<< HEAD
 import { View, Text, StyleSheet, TouchableOpacity, Switch, ScrollView } from 'react-native';
 import { useRouter } from 'expo-router';
 import { ConfigContext } from '../contexts/configContext';
+=======
+import {
+  View,
+  Text,
+  StyleSheet,
+  TouchableOpacity,
+  Switch,
+  ScrollView,
+} from 'react-native';
+
+import { useRouter } from 'expo-router';
+
+import { ConfigContext } from '../contexts/ConfigContext';
+
+import { useTranslation } from 'react-i18next';
+>>>>>>> 6c53f0bd9cf5e03109b7fb61d370ab7a4ea596ce
 import { useFonte } from '../utils/fontes';
 
 export default function Configuracoes() {
   const router = useRouter();
 
+<<<<<<< HEAD
+=======
+  const { t } = useTranslation();
+
+>>>>>>> 6c53f0bd9cf5e03109b7fb61d370ab7a4ea596ce
   const fonte = useFonte();
 
   const {
     fonteGrande,
+<<<<<<< HEAD
     alterarFonte,
+=======
+    idioma,
+    alterarFonte,
+    alterarIdioma,
+>>>>>>> 6c53f0bd9cf5e03109b7fb61d370ab7a4ea596ce
   } = useContext(ConfigContext);
 
   return (
     <ScrollView style={styles.container}>
       {/* Cabeçalho */}
       <View style={styles.header}>
+<<<<<<< HEAD
 <TouchableOpacity
   onPress={() => router.replace('/Home')}
 >
   <Text style={styles.voltar}>←</Text>
 </TouchableOpacity>
+=======
+        <TouchableOpacity
+          onPress={() => router.replace('/Home')}
+        >
+          <Text style={styles.voltar}>←</Text>
+        </TouchableOpacity>
+>>>>>>> 6c53f0bd9cf5e03109b7fb61d370ab7a4ea596ce
 
         <Text
           style={[
@@ -32,14 +68,22 @@ export default function Configuracoes() {
             },
           ]}
         >
+<<<<<<< HEAD
           {('configurações').toUpperCase()}
+=======
+          {t('settings').toUpperCase()}
+>>>>>>> 6c53f0bd9cf5e03109b7fb61d370ab7a4ea596ce
         </Text>
       </View>
 
       {/* Geral */}
       <View style={styles.section}>
         <Text style={styles.sectionTitle}>
+<<<<<<< HEAD
           {('geral').toUpperCase()}
+=======
+          {t('general').toUpperCase()}
+>>>>>>> 6c53f0bd9cf5e03109b7fb61d370ab7a4ea596ce
         </Text>
 
         <View style={styles.item}>
@@ -51,7 +95,11 @@ export default function Configuracoes() {
               },
             ]}
           >
+<<<<<<< HEAD
             {('Fonte Grande')}
+=======
+            {t('largeFont')}
+>>>>>>> 6c53f0bd9cf5e03109b7fb61d370ab7a4ea596ce
           </Text>
 
           <Switch
@@ -74,7 +122,66 @@ export default function Configuracoes() {
               },
             ]}
           >
+<<<<<<< HEAD
             {('Política de Privacidade')}
+=======
+            {t('privacyPolicy')}
+          </Text>
+        </TouchableOpacity>
+      </View>
+
+      {/* Idioma */}
+      <View style={styles.section}>
+        <Text style={styles.sectionTitle}>
+          {t('language').toUpperCase()}
+        </Text>
+
+        <TouchableOpacity
+          onPress={() => alterarIdioma('pt')}
+          style={styles.radioContainer}
+        >
+          <Text
+            style={[
+              styles.radio,
+              {
+                fontSize: fonte.texto,
+              },
+            ]}
+          >
+            {idioma === 'pt' ? '●' : '○'} Português
+          </Text>
+        </TouchableOpacity>
+
+        <TouchableOpacity
+          onPress={() => alterarIdioma('en')}
+          style={styles.radioContainer}
+        >
+          <Text
+            style={[
+              styles.radio,
+              {
+                fontSize: fonte.texto,
+              },
+            ]}
+          >
+            {idioma === 'en' ? '●' : '○'} English
+          </Text>
+        </TouchableOpacity>
+
+        <TouchableOpacity
+          onPress={() => alterarIdioma('es')}
+          style={styles.radioContainer}
+        >
+          <Text
+            style={[
+              styles.radio,
+              {
+                fontSize: fonte.texto,
+              },
+            ]}
+          >
+            {idioma === 'es' ? '●' : '○'} Español
+>>>>>>> 6c53f0bd9cf5e03109b7fb61d370ab7a4ea596ce
           </Text>
         </TouchableOpacity>
       </View>
@@ -82,7 +189,11 @@ export default function Configuracoes() {
       {/* Ajuda */}
       <View style={styles.section}>
         <Text style={styles.sectionTitle}>
+<<<<<<< HEAD
           {('Suporte').toUpperCase()}
+=======
+          {t('helpSupport').toUpperCase()}
+>>>>>>> 6c53f0bd9cf5e03109b7fb61d370ab7a4ea596ce
         </Text>
 
         <TouchableOpacity
@@ -97,11 +208,16 @@ export default function Configuracoes() {
               },
             ]}
           >
+<<<<<<< HEAD
             {('FAQ')}
+=======
+            FAQ
+>>>>>>> 6c53f0bd9cf5e03109b7fb61d370ab7a4ea596ce
           </Text>
         </TouchableOpacity>
 
         <TouchableOpacity
+<<<<<<< HEAD
   style={styles.link}
   onPress={() => router.push('/Feedback')}
 >
@@ -116,6 +232,22 @@ export default function Configuracoes() {
     {('Feedback')}
   </Text>
 </TouchableOpacity>
+=======
+          style={styles.link}
+          onPress={() => router.push('/EnviarFeedback')}
+        >
+          <Text
+            style={[
+              styles.linkText,
+              {
+                fontSize: fonte.texto,
+              },
+            ]}
+          >
+            {t('sendFeedback')}
+          </Text>
+        </TouchableOpacity>
+>>>>>>> 6c53f0bd9cf5e03109b7fb61d370ab7a4ea596ce
 
         <TouchableOpacity
           style={styles.link}
@@ -129,7 +261,11 @@ export default function Configuracoes() {
               },
             ]}
           >
+<<<<<<< HEAD
             {('Sobre')}
+=======
+            {t('about')}
+>>>>>>> 6c53f0bd9cf5e03109b7fb61d370ab7a4ea596ce
           </Text>
         </TouchableOpacity>
       </View>
@@ -199,4 +335,8 @@ const styles = StyleSheet.create({
   radio: {
     color: '#004B9B',
   },
+<<<<<<< HEAD
 });
+=======
+});
+>>>>>>> 6c53f0bd9cf5e03109b7fb61d370ab7a4ea596ce

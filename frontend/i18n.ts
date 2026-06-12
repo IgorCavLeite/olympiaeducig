@@ -30,4 +30,8 @@ i18n
   }
 });
 
+<<<<<<< HEAD
 export default i18n;
+=======
+export default i18n;
+>>>>>>> 6c53f0bd9cf5e03109b7fb61d370ab7a4ea596ce

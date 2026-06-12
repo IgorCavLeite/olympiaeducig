@@ -3,7 +3,10 @@ import cors from 'cors';
 import authRoutes from './routes/authRoutes';
 import chatRoutes from './routes/chatRoutes';
 import quizRoutes from './routes/quizRoutes';
+<<<<<<< HEAD
 import conquistaRoutes from './routes/conquistaRoutes';
+=======
+>>>>>>> 6c53f0bd9cf5e03109b7fb61d370ab7a4ea596ce
 import feedbackRoutes from './routes/feedbackRoutes';
 
 const app = express();
@@ -28,7 +31,10 @@ app.get('/', (req, res) => {
 app.use('/api/auth', authRoutes);
 app.use('/api/chat', chatRoutes);
 app.use('/api/quiz', quizRoutes);
+<<<<<<< HEAD
 app.use('/api/conquistas', conquistaRoutes);
+=======
+>>>>>>> 6c53f0bd9cf5e03109b7fb61d370ab7a4ea596ce
 app.use('/api/feedback', feedbackRoutes);
 
 app.listen(PORT, '0.0.0.0', () => {

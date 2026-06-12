@@ -54,9 +54,17 @@
   "passwordMismatch": "As senhas não coincidem",
   "logoutConfirm": "Tem certeza que deseja sair?",
   "passwordChangeError": "Não foi possível alterar a senha.",
+<<<<<<< HEAD
     "welcomeMessage": "Olá! Sou o OlympIA, seu tutor para olimpíadas acadêmicas.\nPosso te ajudar com suas dúvidas em Biologia!\n\nQual tema vamos estudar hoje?",
+=======
+  "welcomeMessage": "Olá! Sou o OlympIA, seu tutor para olimpíadas acadêmicas.\nPosso te ajudar com suas dúvidas em Biologia!\n\nQual tema vamos estudar hoje?",
+>>>>>>> 6c53f0bd9cf5e03109b7fb61d370ab7a4ea596ce
   "connectionError": "Não foi possível conectar ao servidor. Verifique sua conexão.",
   "thinking": "OlympIA está pensando...",
   "typeQuestion": "Digite sua pergunta...",
   "olympiadTutor": "Tutor de Olimpíadas"
+<<<<<<< HEAD
 }
+=======
+}
+>>>>>>> 6c53f0bd9cf5e03109b7fb61d370ab7a4ea596ce

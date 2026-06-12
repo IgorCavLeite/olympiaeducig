@@ -1,11 +1,33 @@
 import React from 'react';
+<<<<<<< HEAD
 import { ScrollView, Text, StyleSheet, TouchableOpacity, View } from 'react-native';
 import { useRouter } from 'expo-router';
+=======
+
+import {
+  ScrollView,
+  Text,
+  StyleSheet,
+  TouchableOpacity,
+  View,
+} from 'react-native';
+
+import { useRouter } from 'expo-router';
+
+import { useTranslation } from 'react-i18next';
+
+>>>>>>> 6c53f0bd9cf5e03109b7fb61d370ab7a4ea596ce
 import { useFonte } from '../utils/fontes';
 
 export default function PoliticaPrivacidade() {
 
   const router = useRouter();
+<<<<<<< HEAD
+=======
+
+  const { t } = useTranslation();
+
+>>>>>>> 6c53f0bd9cf5e03109b7fb61d370ab7a4ea596ce
   const fonte = useFonte();
 
   return (
@@ -226,4 +248,8 @@ const styles = StyleSheet.create({
     textAlign: 'justify',
   },
 
+<<<<<<< HEAD
 });
+=======
+});
+>>>>>>> 6c53f0bd9cf5e03109b7fb61d370ab7a4ea596ce
