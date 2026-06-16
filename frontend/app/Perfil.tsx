@@ -9,12 +9,23 @@ import {
   Modal,
   ActivityIndicator,
   Keyboard,
-  ScrollView
+  ScrollView,
+  Platform,
+  LayoutAnimation,
+  UIManager,
 } from 'react-native';
 import { useRouter } from 'expo-router';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import axios from 'axios';
+import { useTranslation } from 'react-i18next';
+import { useFonte } from '../utils/fontes';
+import { Ionicons } from '@expo/vector-icons';
 import { ENDPOINTS } from '../constants/Config';
+
+// Habilita animações de layout simples no Android
+if (Platform.OS === 'android' && UIManager.setLayoutAnimationEnabledExperimental) {
+  UIManager.setLayoutAnimationEnabledExperimental(true);
+}
 
 interface Stats {
   totalRespondidas: number;
@@ -24,6 +35,8 @@ interface Stats {
 
 export default function Perfil() {
   const router = useRouter();
+  const { t } = useTranslation();
+  const fonte = useFonte();
 
   const [username, setUsername] = useState('');
   const [email, setEmail] = useState('');
@@ -55,22 +68,20 @@ export default function Perfil() {
         return;
       }
 
-      // Faz chamada protegida ao backend para obter os dados cadastrais e estatísticas
       const response = await axios.get(`${ENDPOINTS.AUTH}/perfil`, {
         headers: { Authorization: `Bearer ${token}` }
       });
 
       const { user, stats: fetchedStats } = response.data;
+      LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
       setUsername(user.nome);
       setEmail(user.email);
       setStats(fetchedStats);
 
-      // Sincroniza localmente no cache por segurança
       await AsyncStorage.setItem('username', user.nome);
     } catch (error: any) {
       console.warn('Erro ao carregar dados do perfil do backend:', error.message);
       
-      // Fallback local se estiver offline
       const nomeLocal = await AsyncStorage.getItem('username');
       if (nomeLocal) setUsername(nomeLocal);
     } finally {
@@ -83,7 +94,7 @@ export default function Perfil() {
     Keyboard.dismiss();
 
     if (!novoNome.trim()) {
-      Alert.alert('Erro', 'O nome não pode estar vazio');
+      Alert.alert(t('error') || 'Erro', t('emptyName') || 'O nome não pode estar vazio');
       return;
     }
 
@@ -96,13 +107,14 @@ export default function Perfil() {
         { headers: { Authorization: `Bearer ${token}` } }
       );
       await AsyncStorage.setItem('username', novoNome.trim());
+      LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
       setUsername(novoNome.trim());
       setModalNomeVisible(false);
       setNovoNome('');
-      Alert.alert('Sucesso', 'Nome atualizado com sucesso!');
+      Alert.alert(t('success') || 'Sucesso', t('nameUpdated') || 'Nome atualizado com sucesso!');
     } catch (error: any) {
-      const msg = error.response?.data?.error || 'Não foi possível atualizar o nome.';
-      Alert.alert('Erro', msg);
+      const msg = error.response?.data?.error || t('profileUpdateError') || 'Não foi possível atualizar o nome.';
+      Alert.alert(t('error') || 'Erro', msg);
     } finally {
       setSalvandoNome(false);
     }
@@ -113,17 +125,17 @@ export default function Perfil() {
     Keyboard.dismiss();
 
     if (!senhaAtual || !novaSenha || !confirmarSenha) {
-      Alert.alert('Erro', 'Preencha todos os campos');
+      Alert.alert(t('error') || 'Erro', t('fillFields') || 'Preencha todos os campos');
       return;
     }
 
     if (novaSenha.length < 8) {
-      Alert.alert('Erro', 'A nova senha deve ter no mínimo 8 caracteres');
+      Alert.alert(t('error') || 'Erro', t('passwordMinError') || 'A nova senha deve ter no mínimo 8 caracteres');
       return;
     }
 
     if (novaSenha !== confirmarSenha) {
-      Alert.alert('Erro', 'As senhas não coincidem');
+      Alert.alert(t('error') || 'Erro', t('passwordMismatch') || 'As senhas não coincidem');
       return;
     }
 
@@ -137,10 +149,10 @@ export default function Perfil() {
       );
       setModalSenhaVisible(false);
       setSenhaAtual(''); setNovaSenha(''); setConfirmarSenha('');
-      Alert.alert('Sucesso', 'Senha alterada com sucesso!');
+      Alert.alert(t('success') || 'Sucesso', t('passwordUpdated') || 'Senha alterada com sucesso!');
     } catch (error: any) {
-      const mensagem = error.response?.data?.error || 'Não foi possível alterar a senha.';
-      Alert.alert('Erro', mensagem);
+      const mensagem = error.response?.data?.error || t('passwordChangeError') || 'Não foi possível alterar a senha.';
+      Alert.alert(t('error') || 'Erro', mensagem);
     } finally {
       setSalvandoSenha(false);
     }
@@ -148,10 +160,10 @@ export default function Perfil() {
 
   // LOGOUT
   const handleLogout = () => {
-    Alert.alert('Sair', 'Tem certeza que deseja sair?', [
-      { text: 'Cancelar', style: 'cancel' },
+    Alert.alert(t('logout') || 'Sair', t('logoutConfirm') || 'Tem certeza que deseja sair?', [
+      { text: t('cancel') || 'Cancelar', style: 'cancel' },
       {
-        text: 'Sair',
+        text: t('logout') || 'Sair',
         style: 'destructive',
         onPress: async () => {
           await AsyncStorage.clear();
@@ -175,102 +187,201 @@ export default function Perfil() {
     <View style={styles.container}>
       {/* HEADER */}
       <View style={styles.header}>
-        <TouchableOpacity onPress={() => router.back()} style={styles.voltarBtn}>
-          <Text style={styles.voltarText}>← Voltar</Text>
+        <TouchableOpacity
+          onPress={() => router.back()}
+          style={styles.backButton}
+          activeOpacity={0.7}
+        >
+          <Ionicons name="arrow-back" size={24} color="#004B9B" />
         </TouchableOpacity>
-        <Text style={styles.headerTitle}>PERFIL</Text>
-        <Text style={styles.headerSubtitle}>Tutor OlympIA</Text>
+        <View style={styles.headerTextContainer}>
+          <Text style={[styles.headerTitle, { fontSize: fonte.titulo }]}>
+            {t('profile') || 'Perfil'}
+          </Text>
+          <Text style={styles.headerSubtitle}>Bons estudos, {username.split(' ')[0]}!</Text>
+        </View>
       </View>
 
       {carregandoDados ? (
         <View style={styles.loaderContainer}>
-          <ActivityIndicator size="large" color="#024084" />
-          <Text style={styles.loaderText}>Carregando perfil...</Text>
+          <ActivityIndicator size="large" color="#004B9B" />
+          <Text style={[styles.loaderText, { fontSize: fonte.texto }]}>
+            Carregando perfil...
+          </Text>
         </View>
       ) : (
         <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
-          {/* AVATAR */}
-          <View style={styles.avatarContainer}>
-            <View style={styles.avatar}>
-              <Text style={styles.avatarText}>{iniciais}</Text>
-            </View>
-            <Text style={styles.username}>{username}</Text>
-            <Text style={styles.userEmail}>{email}</Text>
+          {/* AVATAR CARD */}
+          <View style={styles.avatarCard}>
+            <TouchableOpacity 
+              style={styles.avatarWrapper} 
+              activeOpacity={0.85}
+              onPress={() => { setNovoNome(username); setModalNomeVisible(true); }}
+            >
+              <View style={styles.avatar}>
+                <Text style={styles.avatarText}>{iniciais}</Text>
+              </View>
+              <View style={styles.editAvatarBadge}>
+                <Ionicons name="pencil" size={12} color="#FFFFFF" />
+              </View>
+            </TouchableOpacity>
+            <Text style={[styles.username, { fontSize: fonte.titulo }]}>{username}</Text>
+            <Text style={[styles.userEmail, { fontSize: fonte.texto }]}>{email}</Text>
           </View>
 
-          {/* PAINEL DE ESTATÍSTICAS */}
-          <View style={styles.statsCardContainer}>
-            <Text style={styles.statsTitle}>📊 Estatísticas do Simulado</Text>
+          {/* ESTÁTISTICAS DO SIMULADO */}
+          <View style={styles.statsCard}>
+            <View style={styles.statsHeader}>
+              <Ionicons name="stats-chart" size={20} color="#004B9B" style={{ marginRight: 8 }} />
+              <Text style={[styles.statsTitle, { fontSize: fonte.subtitulo }]}>
+                Estatísticas do Simulado
+              </Text>
+            </View>
+
             <View style={styles.statsGrid}>
               <View style={styles.statBox}>
+                <View style={[styles.statIconBg, { backgroundColor: '#E1F0FC' }]}>
+                  <Ionicons name="book-outline" size={20} color="#004B9B" />
+                </View>
                 <Text style={styles.statValue}>{stats.totalRespondidas}</Text>
                 <Text style={styles.statLabel}>Respondidas</Text>
               </View>
+              
               <View style={styles.statBox}>
-                <Text style={[styles.statValue, { color: '#27ae60' }]}>{stats.totalCorretas}</Text>
+                <View style={[styles.statIconBg, { backgroundColor: '#E8F5E9' }]}>
+                  <Ionicons name="checkmark-done-circle-outline" size={20} color="#2E7D32" />
+                </View>
+                <Text style={[styles.statValue, { color: '#2E7D32' }]}>{stats.totalCorretas}</Text>
                 <Text style={styles.statLabel}>Corretas</Text>
               </View>
+
               <View style={styles.statBox}>
-                <Text style={[styles.statValue, { color: '#e67e22' }]}>{stats.precisao}%</Text>
+                <View style={[styles.statIconBg, { backgroundColor: '#FFF3E0' }]}>
+                  <Ionicons name="analytics-outline" size={20} color="#E65100" />
+                </View>
+                <Text style={[styles.statValue, { color: '#E65100' }]}>{stats.precisao}%</Text>
                 <Text style={styles.statLabel}>Precisão</Text>
+              </View>
+            </View>
+
+            {/* BARRA DE PROGRESSO DE PRECISÃO */}
+            <View style={styles.precisionProgressContainer}>
+              <View style={styles.precisionTextRow}>
+                <Text style={styles.precisionProgressLabel}>Aproveitamento Geral</Text>
+                <Text style={styles.precisionProgressPercent}>{stats.precisao}%</Text>
+              </View>
+              <View style={styles.progressBarBg}>
+                <View 
+                  style={[
+                    styles.progressBarFill, 
+                    { 
+                      width: `${stats.precisao}%`,
+                      backgroundColor: stats.precisao > 70 ? '#2E7D32' : stats.precisao > 40 ? '#FF9800' : '#D32F2F'
+                    }
+                  ]} 
+                />
               </View>
             </View>
           </View>
 
-          {/* OPÇÕES */}
-          <View style={styles.optionsContainer}>
+          {/* OPÇÕES MENU (SETTINGS RAYS STYLE) */}
+          <View style={styles.menuCard}>
             <TouchableOpacity
-              style={styles.button}
+              style={styles.menuRow}
               onPress={() => { setNovoNome(username); setModalNomeVisible(true); }}
+              activeOpacity={0.6}
             >
-              <Text style={styles.buttonText}>Editar Nome</Text>
+              <View style={styles.menuRowLeft}>
+                <View style={[styles.menuIconBg, { backgroundColor: '#E1F0FC' }]}>
+                  <Ionicons name="person-outline" size={18} color="#004B9B" />
+                </View>
+                <Text style={[styles.menuText, { fontSize: fonte.texto }]}>
+                  {t('editName') || 'Editar Nome'}
+                </Text>
+              </View>
+              <Ionicons name="chevron-forward" size={18} color="#90A4AE" />
             </TouchableOpacity>
 
+            <View style={styles.menuDivider} />
+
             <TouchableOpacity
-              style={styles.button}
+              style={styles.menuRow}
               onPress={() => setModalSenhaVisible(true)}
+              activeOpacity={0.6}
             >
-              <Text style={styles.buttonText}>Alterar Senha</Text>
+              <View style={styles.menuRowLeft}>
+                <View style={[styles.menuIconBg, { backgroundColor: '#EDE7F6' }]}>
+                  <Ionicons name="key-outline" size={18} color="#5E35B1" />
+                </View>
+                <Text style={[styles.menuText, { fontSize: fonte.texto }]}>
+                  {t('changePassword') || 'Alterar Senha'}
+                </Text>
+              </View>
+              <Ionicons name="chevron-forward" size={18} color="#90A4AE" />
             </TouchableOpacity>
 
+            <View style={styles.menuDivider} />
+
             <TouchableOpacity
-              style={[styles.button, styles.logoutButton]}
+              style={styles.menuRow}
               onPress={handleLogout}
+              activeOpacity={0.6}
             >
-              <Text style={styles.buttonText}>Sair</Text>
+              <View style={styles.menuRowLeft}>
+                <View style={[styles.menuIconBg, { backgroundColor: '#FFEBEE' }]}>
+                  <Ionicons name="log-out-outline" size={18} color="#D32F2F" />
+                </View>
+                <Text style={[styles.menuText, { color: '#D32F2F', fontSize: fonte.texto }]}>
+                  {t('logout') || 'Sair da Conta'}
+                </Text>
+              </View>
+              <Ionicons name="chevron-forward" size={18} color="#FFCDD2" />
             </TouchableOpacity>
           </View>
         </ScrollView>
       )}
 
       {/* MODAL EDITAR NOME */}
-      <Modal visible={modalNomeVisible} transparent animationType="slide">
+      <Modal visible={modalNomeVisible} transparent animationType="slide" onRequestClose={() => setModalNomeVisible(false)}>
         <View style={styles.modalOverlay}>
           <View style={styles.modalContainer}>
-            <Text style={styles.modalTitulo}>Editar Nome</Text>
-            <TextInput
-              style={styles.modalInput}
-              placeholder="Novo nome"
-              placeholderTextColor="#999"
-              value={novoNome}
-              onChangeText={setNovoNome}
-            />
+            <View style={styles.modalHeader}>
+              <Text style={[styles.modalTitulo, { fontSize: fonte.titulo }]}>
+                {t('editName') || 'Editar Nome'}
+              </Text>
+              <TouchableOpacity onPress={() => setModalNomeVisible(false)}>
+                <Ionicons name="close" size={24} color="#546E7A" />
+              </TouchableOpacity>
+            </View>
+
+            <View style={styles.inputIconWrapper}>
+              <Ionicons name="person-outline" size={20} color="#004B9B" style={styles.inputFieldIcon} />
+              <TextInput
+                style={[styles.modalInput, { fontSize: fonte.texto }]}
+                placeholder={t('newName') || 'Novo nome'}
+                placeholderTextColor="#90A4AE"
+                value={novoNome}
+                onChangeText={setNovoNome}
+              />
+            </View>
+
             <View style={styles.modalBotoes}>
               <TouchableOpacity
                 style={[styles.modalBtn, styles.modalBtnCancelar]}
                 onPress={() => { setModalNomeVisible(false); setNovoNome(''); }}
               >
-                <Text style={styles.modalBtnCancelarText}>Cancelar</Text>
+                <Text style={styles.modalBtnCancelarText}>{t('cancel') || 'Cancelar'}</Text>
               </TouchableOpacity>
               <TouchableOpacity
                 style={[styles.modalBtn, styles.modalBtnSalvar]}
                 onPress={handleEditarNome}
                 disabled={salvandoNome}
               >
-                {salvandoNome
-                  ? <ActivityIndicator color="#fff" size="small" />
-                  : <Text style={styles.modalBtnSalvarText}>Salvar</Text>
-                }
+                {salvandoNome ? (
+                  <ActivityIndicator color="#FFFFFF" size="small" />
+                ) : (
+                  <Text style={styles.modalBtnSalvarText}>{t('save') || 'Salvar'}</Text>
+                )}
               </TouchableOpacity>
             </View>
           </View>
@@ -278,34 +389,54 @@ export default function Perfil() {
       </Modal>
 
       {/* MODAL ALTERAR SENHA */}
-      <Modal visible={modalSenhaVisible} transparent animationType="slide">
+      <Modal visible={modalSenhaVisible} transparent animationType="slide" onRequestClose={() => setModalSenhaVisible(false)}>
         <View style={styles.modalOverlay}>
           <View style={styles.modalContainer}>
-            <Text style={styles.modalTitulo}>Alterar Senha</Text>
-            <TextInput
-              style={styles.modalInput}
-              placeholder="Senha atual"
-              placeholderTextColor="#999"
-              secureTextEntry
-              value={senhaAtual}
-              onChangeText={setSenhaAtual}
-            />
-            <TextInput
-              style={styles.modalInput}
-              placeholder="Nova senha (mínimo 8 caracteres)"
-              placeholderTextColor="#999"
-              secureTextEntry
-              value={novaSenha}
-              onChangeText={setNovaSenha}
-            />
-            <TextInput
-              style={styles.modalInput}
-              placeholder="Confirmar nova senha"
-              placeholderTextColor="#999"
-              secureTextEntry
-              value={confirmarSenha}
-              onChangeText={setConfirmarSenha}
-            />
+            <View style={styles.modalHeader}>
+              <Text style={[styles.modalTitulo, { fontSize: fonte.titulo }]}>
+                {t('changePassword') || 'Alterar Senha'}
+              </Text>
+              <TouchableOpacity onPress={() => setModalSenhaVisible(false)}>
+                <Ionicons name="close" size={24} color="#546E7A" />
+              </TouchableOpacity>
+            </View>
+
+            <View style={styles.inputIconWrapper}>
+              <Ionicons name="lock-closed-outline" size={20} color="#004B9B" style={styles.inputFieldIcon} />
+              <TextInput
+                style={[styles.modalInput, { fontSize: fonte.texto }]}
+                placeholder={t('currentPassword') || 'Senha atual'}
+                placeholderTextColor="#90A4AE"
+                secureTextEntry
+                value={senhaAtual}
+                onChangeText={setSenhaAtual}
+              />
+            </View>
+
+            <View style={styles.inputIconWrapper}>
+              <Ionicons name="key-outline" size={20} color="#5E35B1" style={styles.inputFieldIcon} />
+              <TextInput
+                style={[styles.modalInput, { fontSize: fonte.texto }]}
+                placeholder={t('newPassword') || 'Nova senha'}
+                placeholderTextColor="#90A4AE"
+                secureTextEntry
+                value={novaSenha}
+                onChangeText={setNovaSenha}
+              />
+            </View>
+
+            <View style={styles.inputIconWrapper}>
+              <Ionicons name="checkmark-circle-outline" size={20} color="#5E35B1" style={styles.inputFieldIcon} />
+              <TextInput
+                style={[styles.modalInput, { fontSize: fonte.texto }]}
+                placeholder={t('confirmPassword') || 'Confirmar nova senha'}
+                placeholderTextColor="#90A4AE"
+                secureTextEntry
+                value={confirmarSenha}
+                onChangeText={setConfirmarSenha}
+              />
+            </View>
+
             <View style={styles.modalBotoes}>
               <TouchableOpacity
                 style={[styles.modalBtn, styles.modalBtnCancelar]}
@@ -314,17 +445,18 @@ export default function Perfil() {
                   setSenhaAtual(''); setNovaSenha(''); setConfirmarSenha('');
                 }}
               >
-                <Text style={styles.modalBtnCancelarText}>Cancelar</Text>
+                <Text style={styles.modalBtnCancelarText}>{t('cancel') || 'Cancelar'}</Text>
               </TouchableOpacity>
               <TouchableOpacity
                 style={[styles.modalBtn, styles.modalBtnSalvar]}
                 onPress={handleAlterarSenha}
                 disabled={salvandoSenha}
               >
-                {salvandoSenha
-                  ? <ActivityIndicator color="#fff" size="small" />
-                  : <Text style={styles.modalBtnSalvarText}>Salvar</Text>
-                }
+                {salvandoSenha ? (
+                  <ActivityIndicator color="#FFFFFF" size="small" />
+                ) : (
+                  <Text style={styles.modalBtnSalvarText}>{t('save') || 'Salvar'}</Text>
+                )}
               </TouchableOpacity>
             </View>
           </View>
@@ -335,46 +467,360 @@ export default function Perfil() {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#cceaff' },
-  header: { backgroundColor: '#024084', paddingTop: 50, paddingBottom: 16, paddingHorizontal: 20 },
-  voltarBtn: { marginBottom: 6 },
-  voltarText: { color: '#e4b93f', fontSize: 14, fontWeight: 'bold' },
-  headerTitle: { color: '#fff', fontSize: 22, fontWeight: 'bold', textAlign: 'center' },
-  headerSubtitle: { color: '#e4b93f', fontSize: 12, textAlign: 'center', marginTop: 2 },
-  
-  loaderContainer: { flex: 1, justifyContent: 'center', alignItems: 'center', gap: 12 },
-  loaderText: { color: '#024084', fontSize: 15, fontWeight: '500' },
-  
-  scrollContent: { paddingBottom: 40 },
-  avatarContainer: { alignItems: 'center', marginTop: 24 },
-  avatar: { width: 100, height: 100, borderRadius: 50, backgroundColor: '#024084', borderWidth: 4, borderColor: '#e4b93f', justifyContent: 'center', alignItems: 'center', shadowColor: '#000', shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.1, shadowRadius: 6, elevation: 4 },
-  avatarText: { color: '#fff', fontSize: 36, fontWeight: 'bold' },
-  username: { marginTop: 12, fontSize: 20, fontWeight: 'bold', color: '#024084', textAlign: 'center', paddingHorizontal: 20 },
-  userEmail: { fontSize: 13, color: '#555', marginTop: 2 },
-
-  // Painel de Estatísticas
-  statsCardContainer: { backgroundColor: '#fff', marginHorizontal: 20, marginTop: 24, padding: 18, borderRadius: 16, borderWidth: 1, borderColor: '#dde3ec', shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.04, shadowRadius: 4, elevation: 2 },
-  statsTitle: { fontSize: 15, fontWeight: 'bold', color: '#024084', marginBottom: 16 },
-  statsGrid: { flexDirection: 'row', justifyContent: 'space-between', gap: 8 },
-  statBox: { flex: 1, backgroundColor: '#f0f4f8', padding: 10, borderRadius: 12, alignItems: 'center' },
-  statValue: { fontSize: 20, fontWeight: 'bold', color: '#333' },
-  statLabel: { fontSize: 11, color: '#666', marginTop: 4, fontWeight: '500' },
-
-  // Opções Styles
-  optionsContainer: { marginTop: 24, paddingHorizontal: 20 },
-  button: { backgroundColor: '#024084', padding: 14, borderRadius: 12, marginBottom: 12, alignItems: 'center', shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.05, shadowRadius: 4, elevation: 2 },
-  buttonText: { color: '#fff', fontSize: 15, fontWeight: 'bold' },
-  logoutButton: { backgroundColor: '#c0392b' },
-
-  // Modais Styles
-  modalOverlay: { flex: 1, backgroundColor: 'rgba(0,0,0,0.5)', justifyContent: 'flex-end' },
-  modalContainer: { backgroundColor: '#fff', borderTopLeftRadius: 24, borderTopRightRadius: 24, padding: 24, paddingBottom: 40 },
-  modalTitulo: { fontSize: 18, fontWeight: 'bold', color: '#024084', marginBottom: 20 },
-  modalInput: { backgroundColor: '#f0f4f8', borderRadius: 12, paddingHorizontal: 16, paddingVertical: 12, fontSize: 15, marginBottom: 12, color: '#1a1a2e', borderWidth: 1, borderColor: '#dde3ec' },
-  modalBotoes: { flexDirection: 'row', gap: 12, marginTop: 8 },
-  modalBtn: { flex: 1, paddingVertical: 14, borderRadius: 12, alignItems: 'center' },
-  modalBtnCancelar: { backgroundColor: '#f0f4f8' },
-  modalBtnCancelarText: { color: '#555', fontWeight: '600' },
-  modalBtnSalvar: { backgroundColor: '#024084' },
-  modalBtnSalvarText: { color: '#fff', fontWeight: '600' },
+  container: {
+    flex: 1,
+    backgroundColor: '#F3F9FD',
+  },
+  header: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingTop: Platform.OS === 'ios' ? 50 : 40,
+    paddingBottom: 16,
+    paddingHorizontal: 20,
+    backgroundColor: '#FFFFFF',
+    borderBottomWidth: 1,
+    borderColor: '#E1F0FC',
+    ...Platform.select({
+      ios: {
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.05,
+        shadowRadius: 3,
+      },
+      android: {
+        elevation: 2,
+      },
+    }),
+  },
+  backButton: {
+    width: 42,
+    height: 42,
+    borderRadius: 21,
+    backgroundColor: '#F3F9FD',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginRight: 15,
+    borderWidth: 1,
+    borderColor: '#E1F0FC',
+  },
+  headerTextContainer: {
+    flex: 1,
+  },
+  headerTitle: {
+    color: '#004B9B',
+    fontWeight: 'bold',
+  },
+  headerSubtitle: {
+    color: '#6085a6',
+    fontSize: 13,
+    marginTop: 2,
+  },
+  loaderContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    gap: 12,
+  },
+  loaderText: {
+    color: '#004B9B',
+    fontWeight: '600',
+  },
+  scrollContent: {
+    padding: 20,
+    paddingBottom: 40,
+  },
+  avatarCard: {
+    backgroundColor: '#FFFFFF',
+    borderRadius: 20,
+    paddingVertical: 24,
+    paddingHorizontal: 20,
+    alignItems: 'center',
+    borderWidth: 1,
+    borderColor: '#E1F0FC',
+    marginBottom: 20,
+    ...Platform.select({
+      ios: {
+        shadowColor: '#024084',
+        shadowOffset: { width: 0, height: 4 },
+        shadowOpacity: 0.05,
+        shadowRadius: 10,
+      },
+      android: {
+        elevation: 3,
+      },
+    }),
+  },
+  avatarWrapper: {
+    position: 'relative',
+    marginBottom: 14,
+  },
+  avatar: {
+    width: 90,
+    height: 90,
+    borderRadius: 45,
+    backgroundColor: '#004B9B',
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderWidth: 4,
+    borderColor: '#FFE082',
+    ...Platform.select({
+      ios: {
+        shadowColor: '#004B9B',
+        shadowOffset: { width: 0, height: 4 },
+        shadowOpacity: 0.2,
+        shadowRadius: 6,
+      },
+      android: {
+        elevation: 4,
+      },
+    }),
+  },
+  avatarText: {
+    color: '#FFFFFF',
+    fontSize: 32,
+    fontWeight: 'bold',
+  },
+  editAvatarBadge: {
+    position: 'absolute',
+    bottom: 0,
+    right: 0,
+    width: 28,
+    height: 28,
+    borderRadius: 14,
+    backgroundColor: '#004B9B',
+    borderWidth: 2,
+    borderColor: '#FFFFFF',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  username: {
+    color: '#004B9B',
+    fontWeight: 'bold',
+    textAlign: 'center',
+    paddingHorizontal: 10,
+  },
+  userEmail: {
+    color: '#546E7A',
+    marginTop: 4,
+  },
+  statsCard: {
+    backgroundColor: '#FFFFFF',
+    borderRadius: 20,
+    padding: 18,
+    borderWidth: 1,
+    borderColor: '#E1F0FC',
+    marginBottom: 20,
+    ...Platform.select({
+      ios: {
+        shadowColor: '#024084',
+        shadowOffset: { width: 0, height: 4 },
+        shadowOpacity: 0.05,
+        shadowRadius: 10,
+      },
+      android: {
+        elevation: 3,
+      },
+    }),
+  },
+  statsHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 16,
+    borderBottomWidth: 1,
+    borderColor: '#F0F5FA',
+    paddingBottom: 10,
+  },
+  statsTitle: {
+    color: '#004B9B',
+    fontWeight: 'bold',
+  },
+  statsGrid: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    gap: 10,
+    marginBottom: 18,
+  },
+  statBox: {
+    flex: 1,
+    backgroundColor: '#F8FBFE',
+    borderWidth: 1,
+    borderColor: '#F0F5FA',
+    paddingVertical: 14,
+    paddingHorizontal: 8,
+    borderRadius: 16,
+    alignItems: 'center',
+  },
+  statIconBg: {
+    width: 38,
+    height: 38,
+    borderRadius: 19,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginBottom: 8,
+  },
+  statValue: {
+    fontSize: 22,
+    fontWeight: 'bold',
+    color: '#2C3E50',
+  },
+  statLabel: {
+    fontSize: 12,
+    color: '#78909C',
+    marginTop: 4,
+    fontWeight: '600',
+  },
+  precisionProgressContainer: {
+    backgroundColor: '#F8FBFE',
+    borderRadius: 12,
+    padding: 12,
+    borderWidth: 1,
+    borderColor: '#F0F5FA',
+  },
+  precisionTextRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginBottom: 8,
+  },
+  precisionProgressLabel: {
+    fontSize: 13,
+    color: '#546E7A',
+    fontWeight: '600',
+  },
+  precisionProgressPercent: {
+    fontSize: 13,
+    color: '#004B9B',
+    fontWeight: '700',
+  },
+  progressBarBg: {
+    height: 8,
+    borderRadius: 4,
+    backgroundColor: '#CFD8DC',
+    overflow: 'hidden',
+  },
+  progressBarFill: {
+    height: '100%',
+    borderRadius: 4,
+  },
+  menuCard: {
+    backgroundColor: '#FFFFFF',
+    borderRadius: 20,
+    borderWidth: 1,
+    borderColor: '#E1F0FC',
+    paddingHorizontal: 16,
+    ...Platform.select({
+      ios: {
+        shadowColor: '#024084',
+        shadowOffset: { width: 0, height: 4 },
+        shadowOpacity: 0.05,
+        shadowRadius: 10,
+      },
+      android: {
+        elevation: 3,
+      },
+    }),
+  },
+  menuRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingVertical: 16,
+  },
+  menuRowLeft: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  menuIconBg: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginRight: 14,
+  },
+  menuText: {
+    color: '#2C3E50',
+    fontWeight: '600',
+  },
+  menuDivider: {
+    height: 1,
+    backgroundColor: '#F0F5FA',
+  },
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(2, 64, 132, 0.4)',
+    justifyContent: 'flex-end',
+  },
+  modalContainer: {
+    backgroundColor: '#FFFFFF',
+    borderTopLeftRadius: 28,
+    borderTopRightRadius: 28,
+    padding: 24,
+    paddingBottom: Platform.OS === 'ios' ? 44 : 28,
+    ...Platform.select({
+      ios: {
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: -3 },
+        shadowOpacity: 0.1,
+        shadowRadius: 8,
+      },
+      android: {
+        elevation: 10,
+      },
+    }),
+  },
+  modalHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 20,
+  },
+  modalTitulo: {
+    color: '#004B9B',
+    fontWeight: 'bold',
+  },
+  inputIconWrapper: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#F0F4F8',
+    borderRadius: 16,
+    borderWidth: 1,
+    borderColor: '#E1F0FC',
+    marginBottom: 14,
+    paddingHorizontal: 14,
+  },
+  inputFieldIcon: {
+    marginRight: 10,
+  },
+  modalInput: {
+    flex: 1,
+    paddingVertical: 12,
+    color: '#2C3E50',
+  },
+  modalBotoes: {
+    flexDirection: 'row',
+    gap: 12,
+    marginTop: 10,
+  },
+  modalBtn: {
+    flex: 1,
+    paddingVertical: 14,
+    borderRadius: 14,
+    alignItems: 'center',
+  },
+  modalBtnCancelar: {
+    backgroundColor: '#F0F4F8',
+    borderWidth: 1,
+    borderColor: '#E1F0FC',
+  },
+  modalBtnCancelarText: {
+    color: '#546E7A',
+    fontWeight: '700',
+  },
+  modalBtnSalvar: {
+    backgroundColor: '#004B9B',
+  },
+  modalBtnSalvarText: {
+    color: '#FFFFFF',
+    fontWeight: '700',
+  },
 });

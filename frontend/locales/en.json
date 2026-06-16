@@ -54,13 +54,9 @@
   "passwordMismatch": "Passwords do not match",
   "logoutConfirm": "Are you sure you want to logout?",
   "passwordChangeError": "Could not change password.",
-  "welcomeMessage": "Olá! Sou o OlympIA, seu tutor para olimpíadas acadêmicas.\nPosso te ajudar com suas dúvidas em Biologia!\n\nQual tema vamos estudar hoje?",
-  "connectionError": "Não foi possível conectar ao servidor. Verifique sua conexão.",
-  "thinking": "OlympIA está pensando...",
-  "typeQuestion": "Digite sua pergunta...",
-  "olympiadTutor": "Tutor de Olimpíadas"
-<<<<<<< HEAD
+  "welcomeMessage": "Hello! I'm OlympIA, your tutor for academic olympiads.\nI can help you with your Biology questions!\n\nWhat topic shall we study today?",
+  "connectionError": "Could not connect to the server. Check your connection.",
+  "thinking": "OlympIA is thinking...",
+  "typeQuestion": "Type your question...",
+  "olympiadTutor": "Olympiad Tutor"
 }
-=======
-}
->>>>>>> 6c53f0bd9cf5e03109b7fb61d370ab7a4ea596ce

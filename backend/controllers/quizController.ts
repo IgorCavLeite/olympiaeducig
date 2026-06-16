@@ -36,11 +36,7 @@ export const getQuestoes = async (req: AuthenticatedRequest, res: Response) => {
     res.json(results);
   } catch (err) {
     console.error('Erro ao buscar questões:', err);
-<<<<<<< HEAD
     res.status(500).json({ error: 'Erro no servidor ao buscar questões' });
-=======
-    return res.status(500).json({ error: 'Erro no servidor ao buscar questões' });
->>>>>>> 6c53f0bd9cf5e03109b7fb61d370ab7a4ea596ce
   }
 };
 
@@ -61,16 +57,11 @@ export const responderQuestao = async (req: AuthenticatedRequest, res: Response)
   const letraResposta = resposta_escolhida.toUpperCase().trim();
 
   try {
-<<<<<<< HEAD
     // Busca a questão para conferir a resposta correta
     const [results]: any = await pool.query(
       'SELECT resposta_correta, explicacao FROM questoes WHERE id = ?',
       [questao_id]
     );
-=======
-    // 1. Busca a questão para conferir a resposta correta
-    const [results]: any = await pool.query('SELECT resposta_correta, explicacao FROM questoes WHERE id = ?', [questao_id]);
->>>>>>> 6c53f0bd9cf5e03109b7fb61d370ab7a4ea596ce
 
     if (results.length === 0) {
       return res.status(404).json({ error: 'Questão não encontrada' });
@@ -90,7 +81,6 @@ export const responderQuestao = async (req: AuthenticatedRequest, res: Response)
       // Mesmo se falhar, retorna o resultado para o aluno não travar
     }
 
-<<<<<<< HEAD
     res.json({
       correta,
       resposta_correta: questao.resposta_correta,
@@ -99,23 +89,6 @@ export const responderQuestao = async (req: AuthenticatedRequest, res: Response)
   } catch (err) {
     console.error('Erro ao conferir questão:', err);
     res.status(500).json({ error: 'Erro no servidor' });
-=======
-    try {
-      await pool.query(insertSql, [usuario_id, questao_id, letraResposta, correta]);
-    } catch (insertErr) {
-      console.error('Erro ao salvar resposta do usuário:', insertErr);
-      // Mesmo se falhar em salvar o histórico, retornamos o resultado para o aluno não travar
-    }
-
-    res.json({
-      correta,
-      resposta_correta: questao.resposta_correta,
-      explicacao: questao.explicacao
-    });
-  } catch (err) {
-    console.error('Erro ao conferir questão:', err);
-    return res.status(500).json({ error: 'Erro no servidor' });
->>>>>>> 6c53f0bd9cf5e03109b7fb61d370ab7a4ea596ce
   }
 };
 
@@ -123,23 +96,13 @@ export const responderQuestao = async (req: AuthenticatedRequest, res: Response)
 
 export const getCategorias = async (req: AuthenticatedRequest, res: Response) => {
   try {
-<<<<<<< HEAD
     const [results]: any = await pool.query(
       'SELECT DISTINCT categoria FROM questoes WHERE categoria IS NOT NULL'
     );
-=======
-    const [results]: any = await pool.query('SELECT DISTINCT categoria FROM questoes WHERE categoria IS NOT NULL');
->>>>>>> 6c53f0bd9cf5e03109b7fb61d370ab7a4ea596ce
     const categorias = results.map((r: any) => r.categoria);
     res.json(categorias);
   } catch (err) {
     console.error('Erro ao obter categorias:', err);
-<<<<<<< HEAD
     res.status(500).json({ error: 'Erro no servidor' });
   }
 };
-=======
-    return res.status(500).json({ error: 'Erro no servidor' });
-  }
-};
->>>>>>> 6c53f0bd9cf5e03109b7fb61d370ab7a4ea596ce

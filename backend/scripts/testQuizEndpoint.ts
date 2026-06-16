@@ -1,4 +1,3 @@
-import axios from 'axios';
 import pool from '../config/db';
 
 async function test() {
@@ -12,58 +11,73 @@ async function test() {
   try {
     // 1. Cadastrar usuário de teste
     console.log('1. Cadastrando usuário temporário...');
-    await axios.post(`${baseURL}/auth/register`, {
-      nome: testNome,
-      email: testEmail,
-      senha: testPassword
+    const registerRes = await fetch(`${baseURL}/auth/register`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        nome: testNome,
+        email: testEmail,
+        senha: testPassword
+      })
     });
+    if (!registerRes.ok) {
+      throw new Error(`Erro ao cadastrar usuário: ${registerRes.status} ${await registerRes.text()}`);
+    }
     console.log('✅ Usuário cadastrado com sucesso!');
 
     // 2. Fazer Login para obter o token JWT
     console.log('2. Efetuando login...');
-    const loginRes = await axios.post(`${baseURL}/auth/login`, {
-      email: testEmail,
-      senha: testPassword
+    const loginRes = await fetch(`${baseURL}/auth/login`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        email: testEmail,
+        senha: testPassword
+      })
     });
-    const token = loginRes.data.token;
+    if (!loginRes.ok) {
+      throw new Error(`Erro no login: ${loginRes.status} ${await loginRes.text()}`);
+    }
+    const loginData = await loginRes.json() as any;
+    const token = loginData.token;
     console.log('✅ Login bem-sucedido! Token obtido:', token.substring(0, 20) + '...');
 
     // 3. Chamar o endpoint do Quiz
     console.log('3. Buscando questões no quiz (GET /api/quiz/questoes)...');
-    const quizRes = await axios.get(`${baseURL}/quiz/questoes`, {
-      headers: { Authorization: `Bearer ${token}` },
-      params: { limite: 5 }
+    const quizRes = await fetch(`${baseURL}/quiz/questoes?limite=5`, {
+      method: 'GET',
+      headers: { 
+        'Authorization': `Bearer ${token}` 
+      }
     });
+    if (!quizRes.ok) {
+      throw new Error(`Erro ao buscar questões: ${quizRes.status} ${await quizRes.text()}`);
+    }
 
+    const quizData = await quizRes.json() as any[];
     console.log('✅ Resposta recebida com sucesso!');
     console.log('Status:', quizRes.status);
-    console.log(`Total de questões recebidas: ${quizRes.data.length}`);
-    if (quizRes.data.length > 0) {
+    console.log(`Total de questões recebidas: ${quizData.length}`);
+    if (quizData.length > 0) {
       console.log('Exemplo da primeira questão:', {
-        id: quizRes.data[0].id,
-        enunciado: quizRes.data[0].enunciado.substring(0, 60) + '...'
+        id: quizData[0].id,
+        enunciado: quizData[0].enunciado.substring(0, 60) + '...'
       });
     }
 
   } catch (error: any) {
     console.error('❌ Ocorreu um erro no teste:');
-    if (error.response) {
-      console.error('Status do erro:', error.response.status);
-      console.error('Dados do erro:', error.response.data);
-    } else {
-      console.error(error.message);
-    }
+    console.error(error.message);
   } finally {
     // Limpar usuário temporário do banco de dados
     console.log('\n🧹 Limpando dados de teste do banco...');
-    await new Promise<void>((resolve) => {
-      pool.query('DELETE FROM usuarios WHERE email = ?', [testEmail], (err) => {
-        if (err) console.error('Erro ao deletar usuário temporário:', err.message);
-        else console.log('✅ Dados de teste limpos!');
-        resolve();
-      });
-    });
-    pool.end();
+    try {
+      await pool.query('DELETE FROM usuarios WHERE email = ?', [testEmail]);
+      console.log('✅ Dados de teste limpos!');
+    } catch (err: any) {
+      console.error('Erro ao deletar usuário temporário:', err.message);
+    }
+    await pool.end();
   }
 }
 

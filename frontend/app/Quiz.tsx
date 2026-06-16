@@ -6,12 +6,23 @@ import {
   TouchableOpacity,
   ScrollView,
   ActivityIndicator,
-  Alert
+  Alert,
+  Platform,
+  LayoutAnimation,
+  UIManager
 } from 'react-native';
 import { useRouter } from 'expo-router';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import axios from 'axios';
+import { useTranslation } from 'react-i18next';
+import { useFonte } from '../utils/fontes';
+import { Ionicons } from '@expo/vector-icons';
 import { ENDPOINTS } from '../constants/Config';
+
+// Habilita animações de layout simples no Android
+if (Platform.OS === 'android' && UIManager.setLayoutAnimationEnabledExperimental) {
+  UIManager.setLayoutAnimationEnabledExperimental(true);
+}
 
 interface Questao {
   id: number;
@@ -28,6 +39,8 @@ interface Questao {
 
 export default function Quiz() {
   const router = useRouter();
+  const { t } = useTranslation();
+  const fonte = useFonte();
 
   // Estados de Fluxo
   const [faseQuiz, setFaseQuiz] = useState<'lobby' | 'jogando' | 'resultado'>('lobby');
@@ -72,13 +85,13 @@ export default function Quiz() {
       const response = await axios.get(`${ENDPOINTS.QUIZ}/categorias`, {
         headers: { Authorization: `Bearer ${token}` }
       });
+      LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
       setCategorias(['Todas', ...response.data]);
     } catch (error) {
       console.warn('Erro ao carregar categorias:', error);
     }
   };
 
-  // Registra acertos no backend de conquistas
   const registrarAcertosConquistas = async (acertos: number) => {
     try {
       const usuario_id = await AsyncStorage.getItem('usuario_id');
@@ -89,8 +102,14 @@ export default function Quiz() {
         acertos,
       });
     } catch (e) {
-      // Silencioso — não impede o fluxo do quiz
+      // Silencioso
     }
+  };
+
+  // Mudar fase com animação
+  const setFaseQuizComAnimacao = (fase: 'lobby' | 'jogando' | 'resultado') => {
+    LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
+    setFaseQuiz(fase);
   };
 
   // INICIAR SIMULADO
@@ -99,7 +118,7 @@ export default function Quiz() {
     try {
       const token = await AsyncStorage.getItem('token');
       if (!token) {
-        Alert.alert('Erro', 'Você precisa estar logado para fazer o quiz');
+        Alert.alert(t('error') || 'Erro', 'Você precisa estar logado para fazer o quiz');
         router.replace('/LoginScreen');
         return;
       }
@@ -123,10 +142,10 @@ export default function Quiz() {
       setAlternativaSelecionada(null);
       setRespostaConfirmada(false);
       setTotalAcertos(0);
-      setFaseQuiz('jogando');
+      setFaseQuizComAnimacao('jogando');
     } catch (error: any) {
       const msg = error.response?.data?.error || 'Não foi possível carregar as questões.';
-      Alert.alert('Erro', msg);
+      Alert.alert(t('error') || 'Erro', msg);
     } finally {
       setCarregando(false);
     }
@@ -151,6 +170,8 @@ export default function Quiz() {
       );
 
       const { correta, resposta_correta, explicacao } = response.data;
+      
+      LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
       setAcertouQuestao(correta);
       setAlternativaCorreta(resposta_correta);
       setExplicacaoIA(explicacao || 'Sem explicação disponível.');
@@ -160,7 +181,7 @@ export default function Quiz() {
         setTotalAcertos(prev => prev + 1);
       }
     } catch (error: any) {
-      Alert.alert('Erro', 'Falha ao processar a resposta.');
+      Alert.alert(t('error') || 'Erro', 'Falha ao processar a resposta.');
     } finally {
       setCarregando(false);
     }
@@ -168,6 +189,7 @@ export default function Quiz() {
 
   // PRÓXIMA QUESTÃO
   const handleProximaQuestao = () => {
+    LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
     setAlternativaSelecionada(null);
     setRespostaConfirmada(false);
     setExplicacaoIA('');
@@ -176,13 +198,13 @@ export default function Quiz() {
     if (indiceAtual + 1 < questoes.length) {
       setIndiceAtual(prev => prev + 1);
     } else {
-      setFaseQuiz('resultado');
+      setFaseQuizComAnimacao('resultado');
     }
   };
 
   // VOLTAR AO LOBBY
   const handleVoltarLobby = () => {
-    setFaseQuiz('lobby');
+    setFaseQuizComAnimacao('lobby');
     setQuestoes([]);
     carregarCategorias();
   };
@@ -191,56 +213,77 @@ export default function Quiz() {
 
   const renderLobby = () => (
     <ScrollView contentContainerStyle={styles.lobbyContent} showsVerticalScrollIndicator={false}>
-      <Text style={styles.lobbySubtitulo}>Prepare-se para a Olimpíada Brasileira de Biologia (OBB)</Text>
+      <Text style={[styles.lobbySubtitulo, { fontSize: fonte.subtitulo }]}>
+        Treine com questões oficiais e gabaritos comentados pela Inteligência Artificial.
+      </Text>
 
-      <View style={styles.secaoFiltro}>
-        <Text style={styles.filtroLabel}>Selecionar Prova (Ano):</Text>
-        <View style={styles.grupoBotoes}>
-          {anosDisponiveis.map(ano => (
-            <TouchableOpacity
-              key={ano}
-              style={[styles.botaoOpcao, anoSelecionado === ano && styles.botaoOpcaoAtivo]}
-              onPress={() => setAnoSelecionado(ano)}
-            >
-              <Text style={[styles.textoOpcao, anoSelecionado === ano && styles.textoOpcaoAtivo]}>
-                {ano === 'Todos' ? 'Qualquer' : ano}
-              </Text>
-            </TouchableOpacity>
-          ))}
+      {/* CARD DE FILTROS */}
+      <View style={styles.cardFiltros}>
+        <View style={styles.secaoFiltro}>
+          <View style={styles.filtroHeader}>
+            <Ionicons name="calendar-outline" size={18} color="#004B9B" style={{ marginRight: 8 }} />
+            <Text style={styles.filtroLabel}>Ano da Prova</Text>
+          </View>
+          <View style={styles.grupoBotoes}>
+            {anosDisponiveis.map(ano => (
+              <TouchableOpacity
+                key={ano}
+                style={[styles.botaoOpcao, anoSelecionado === ano && styles.botaoOpcaoAtivo]}
+                onPress={() => setAnoSelecionado(ano)}
+                activeOpacity={0.8}
+              >
+                <Text style={[styles.textoOpcao, { fontSize: fonte.texto }, anoSelecionado === ano && styles.textoOpcaoAtivo]}>
+                  {ano === 'Todos' ? 'Qualquer' : ano}
+                </Text>
+              </TouchableOpacity>
+            ))}
+          </View>
         </View>
-      </View>
 
-      <View style={styles.secaoFiltro}>
-        <Text style={styles.filtroLabel}>Filtrar por Tema:</Text>
-        <View style={styles.grupoBotoesFlex}>
-          {(categorias.length > 0 ? categorias : ['Todas']).map(cat => (
-            <TouchableOpacity
-              key={cat}
-              style={[styles.botaoBadge, categoriaSelecionada === cat && styles.botaoBadgeAtivo]}
-              onPress={() => setCategoriaSelecionada(cat)}
-            >
-              <Text style={[styles.textoBadge, categoriaSelecionada === cat && styles.textoBadgeAtivo]}>
-                {cat}
-              </Text>
-            </TouchableOpacity>
-          ))}
+        <View style={styles.divider} />
+
+        <View style={styles.secaoFiltro}>
+          <View style={styles.filtroHeader}>
+            <Ionicons name="bookmark-outline" size={18} color="#004B9B" style={{ marginRight: 8 }} />
+            <Text style={styles.filtroLabel}>Tema de Biologia</Text>
+          </View>
+          <View style={styles.grupoBotoesFlex}>
+            {(categorias.length > 0 ? categorias : ['Todas']).map(cat => (
+              <TouchableOpacity
+                key={cat}
+                style={[styles.botaoBadge, categoriaSelecionada === cat && styles.botaoBadgeAtivo]}
+                onPress={() => setCategoriaSelecionada(cat)}
+                activeOpacity={0.8}
+              >
+                <Text style={[styles.textoBadge, { fontSize: fonte.texto - 2 }, categoriaSelecionada === cat && styles.textoBadgeAtivo]}>
+                  {cat}
+                </Text>
+              </TouchableOpacity>
+            ))}
+          </View>
         </View>
-      </View>
 
-      <View style={styles.secaoFiltro}>
-        <Text style={styles.filtroLabel}>Quantidade de Questões:</Text>
-        <View style={styles.grupoBotoes}>
-          {[5, 10, 15, 20].map(num => (
-            <TouchableOpacity
-              key={num}
-              style={[styles.botaoOpcao, limiteQuestoes === num && styles.botaoOpcaoAtivo]}
-              onPress={() => setLimiteQuestoes(num)}
-            >
-              <Text style={[styles.textoOpcao, limiteQuestoes === num && styles.textoOpcaoAtivo]}>
-                {num}
-              </Text>
-            </TouchableOpacity>
-          ))}
+        <View style={styles.divider} />
+
+        <View style={styles.secaoFiltro}>
+          <View style={styles.filtroHeader}>
+            <Ionicons name="list-outline" size={18} color="#004B9B" style={{ marginRight: 8 }} />
+            <Text style={styles.filtroLabel}>Número de Questões</Text>
+          </View>
+          <View style={styles.grupoBotoes}>
+            {[5, 10, 15, 20].map(num => (
+              <TouchableOpacity
+                key={num}
+                style={[styles.botaoOpcao, limiteQuestoes === num && styles.botaoOpcaoAtivo]}
+                onPress={() => setLimiteQuestoes(num)}
+                activeOpacity={0.8}
+              >
+                <Text style={[styles.textoOpcao, { fontSize: fonte.texto }, limiteQuestoes === num && styles.textoOpcaoAtivo]}>
+                  {num}
+                </Text>
+              </TouchableOpacity>
+            ))}
+          </View>
         </View>
       </View>
 
@@ -248,11 +291,15 @@ export default function Quiz() {
         style={[styles.botaoPrincipal, carregando && styles.botaoDesabilitado]}
         onPress={handleIniciarQuiz}
         disabled={carregando}
+        activeOpacity={0.8}
       >
         {carregando ? (
-          <ActivityIndicator color="#fff" />
+          <ActivityIndicator color="#FFFFFF" />
         ) : (
-          <Text style={styles.textoBotaoPrincipal}>Iniciar Simulado</Text>
+          <>
+            <Text style={styles.textoBotaoPrincipal}>Iniciar Simulado</Text>
+            <Ionicons name="play-circle-outline" size={22} color="#FFFFFF" style={{ marginLeft: 8 }} />
+          </>
         )}
       </TouchableOpacity>
     </ScrollView>
@@ -289,22 +336,54 @@ export default function Quiz() {
       return styles.textoAlternativa;
     };
 
+    const getIconeBadge = (letra: string) => {
+      if (!respostaConfirmada) {
+        return <Text style={styles.letraTexto}>{letra}</Text>;
+      }
+      if (letra === alternativaCorreta) {
+        return <Ionicons name="checkmark" size={16} color="#FFFFFF" />;
+      }
+      if (alternativaSelecionada === letra && !acertouQuestao) {
+        return <Ionicons name="close" size={16} color="#FFFFFF" />;
+      }
+      return <Text style={styles.letraTexto}>{letra}</Text>;
+    };
+
+    const getEstiloBadge = (letra: string) => {
+      if (!respostaConfirmada) {
+        return alternativaSelecionada === letra
+          ? [styles.letraBadge, styles.letraBadgeSelecionado]
+          : styles.letraBadge;
+      }
+      if (letra === alternativaCorreta) return [styles.letraBadge, styles.letraBadgeCorreto];
+      if (alternativaSelecionada === letra && !acertouQuestao) return [styles.letraBadge, styles.letraBadgeErrado];
+      return styles.letraBadge;
+    };
+
     return (
       <ScrollView contentContainerStyle={styles.jogandoContent} showsVerticalScrollIndicator={false}>
+        {/* COMPONENTE DE PROGRESSO */}
         <View style={styles.containerProgresso}>
+          <View style={styles.progressoHeader}>
+            <View style={styles.capsulaQuestao}>
+              <Text style={styles.textoProgresso}>Questão {indiceAtual + 1} de {totalQuestoes}</Text>
+            </View>
+            <View style={styles.capsulaMeta}>
+              <Ionicons name="folder-open-outline" size={12} color="#004B9B" style={{ marginRight: 4 }} />
+              <Text style={styles.textoFiltrosQuestao}>{questao.categoria} • OBB {questao.ano}</Text>
+            </View>
+          </View>
           <View style={styles.barraFundoProgresso}>
             <View style={[styles.barraAtivaProgresso, { width: `${progresso * 100}%` }]} />
           </View>
-          <View style={styles.infoProgresso}>
-            <Text style={styles.textoProgresso}>Questão {indiceAtual + 1} de {totalQuestoes}</Text>
-            <Text style={styles.textoFiltrosQuestao}>{questao.categoria} • OBB {questao.ano}</Text>
-          </View>
         </View>
 
+        {/* CARTÃO DO ENUNCIADO */}
         <View style={styles.cardEnunciado}>
-          <Text style={styles.textoEnunciado}>{questao.enunciado}</Text>
+          <Text style={[styles.textoEnunciado, { fontSize: fonte.texto }]}>{questao.enunciado}</Text>
         </View>
 
+        {/* CONTAINER DE ALTERNATIVAS */}
         <View style={styles.containerAlternativas}>
           {[
             { letra: 'A', texto: questao.alternativa_a },
@@ -320,40 +399,68 @@ export default function Quiz() {
               disabled={respostaConfirmada}
               activeOpacity={0.7}
             >
-              <View style={styles.letraBadge}>
-                <Text style={styles.letraTexto}>{item.letra}</Text>
+              <View style={getEstiloBadge(item.letra)}>
+                {getIconeBadge(item.letra)}
               </View>
-              <Text style={getEstiloTextoAlternativa(item.letra)}>{item.texto}</Text>
+              <Text style={[getEstiloTextoAlternativa(item.letra), { fontSize: fonte.texto }]}>
+                {item.texto}
+              </Text>
             </TouchableOpacity>
           ))}
         </View>
 
+        {/* EXPLICAÇÃO DO TUTOR */}
         {respostaConfirmada && (
           <View style={[styles.cardExplicacao, acertouQuestao ? styles.cardExplicacaoCorreto : styles.cardExplicacaoErrado]}>
-            <Text style={styles.tituloExplicacao}>
-              {acertouQuestao ? '🎉 Resposta Correta!' : '❌ Resposta Incorreta'}
-            </Text>
-            <Text style={styles.textoExplicacao}>{explicacaoIA}</Text>
+            <View style={styles.explicacaoHeader}>
+              <Ionicons 
+                name={acertouQuestao ? "checkmark-circle" : "close-circle"} 
+                size={22} 
+                color={acertouQuestao ? "#2E7D32" : "#D32F2F"} 
+                style={{ marginRight: 8 }}
+              />
+              <Text style={[styles.tituloExplicacao, { color: acertouQuestao ? "#2E7D32" : "#D32F2F", fontSize: fonte.subtitulo }]}>
+                {acertouQuestao ? 'Resposta Correta!' : 'Resposta Incorreta'}
+              </Text>
+            </View>
+            <View style={styles.explicacaoIaBox}>
+              <View style={styles.explicacaoIaTitleRow}>
+                <Ionicons name="sparkles-outline" size={14} color="#E65100" style={{ marginRight: 6 }} />
+                <Text style={styles.explicacaoIaTitle}>Explicação da OlympIA</Text>
+              </View>
+              <Text style={[styles.textoExplicacao, { fontSize: fonte.texto - 1 }]}>{explicacaoIA}</Text>
+            </View>
           </View>
         )}
 
+        {/* BOTOES DE AÇÃO */}
         {!respostaConfirmada ? (
           <TouchableOpacity
             style={[styles.botaoPrincipal, !alternativaSelecionada && styles.botaoDesabilitado]}
             onPress={handleConfirmarResposta}
             disabled={!alternativaSelecionada || carregando}
+            activeOpacity={0.8}
           >
             {carregando ? (
-              <ActivityIndicator color="#fff" />
+              <ActivityIndicator color="#FFFFFF" />
             ) : (
-              <Text style={styles.textoBotaoPrincipal}>Confirmar Resposta</Text>
+              <>
+                <Text style={styles.textoBotaoPrincipal}>Confirmar Resposta</Text>
+                <Ionicons name="checkmark-done" size={20} color="#FFFFFF" style={{ marginLeft: 8 }} />
+              </>
             )}
           </TouchableOpacity>
         ) : (
-          <TouchableOpacity style={styles.botaoPrincipal} onPress={handleProximaQuestao}>
+          <TouchableOpacity style={styles.botaoPrincipal} onPress={handleProximaQuestao} activeOpacity={0.8}>
             <Text style={styles.textoBotaoPrincipal}>
-              {indiceAtual + 1 < totalQuestoes ? 'Próxima Questão →' : 'Ver Resultados'}
+              {indiceAtual + 1 < totalQuestoes ? 'Próxima Questão' : 'Ver Resultados'}
             </Text>
+            <Ionicons 
+              name={indiceAtual + 1 < totalQuestoes ? "arrow-forward-outline" : "stats-chart-outline"} 
+              size={20} 
+              color="#FFFFFF" 
+              style={{ marginLeft: 8 }} 
+            />
           </TouchableOpacity>
         )}
       </ScrollView>
@@ -367,48 +474,79 @@ export default function Quiz() {
     const porcentagemAcertos = Math.round((totalAcertos / totalQuestoes) * 100);
 
     let feedbackMsg = 'Continue estudando! Pratique mais simulados para evoluir.';
+    let medalIcon = 'medal-outline';
+    let medalColor = '#78909C';
+
     if (porcentagemAcertos >= 80) {
       feedbackMsg = 'Espetacular! Você está muito bem preparado para a olimpíada. Darwin ficaria orgulhoso!';
+      medalIcon = 'trophy';
+      medalColor = '#FFD54F';
     } else if (porcentagemAcertos >= 50) {
       feedbackMsg = 'Bom desempenho! Revise os tópicos errados e tente melhorar no próximo.';
+      medalIcon = 'medal';
+      medalColor = '#E0E0E0';
     }
 
     return (
       <View style={styles.resultadoContent}>
-        <Text style={styles.resultadoTitulo}>Simulado Concluído!</Text>
+        <Text style={[styles.resultadoTitulo, { fontSize: fonte.titulo }]}>Simulado Concluído!</Text>
 
-        <View style={styles.resultadoCirculo}>
+        <View style={[styles.resultadoCirculo, { borderColor: medalColor }]}>
+          <Ionicons name={medalIcon as any} size={44} color={medalColor} style={{ marginBottom: 6 }} />
           <Text style={styles.resultadoScore}>{porcentagemAcertos}%</Text>
           <Text style={styles.resultadoScoreDetalhe}>{totalAcertos} de {totalQuestoes} acertos</Text>
         </View>
 
-        <Text style={styles.resultadoFeedback}>{feedbackMsg}</Text>
+        <View style={styles.resultadoFeedbackCard}>
+          <Text style={[styles.resultadoFeedback, { fontSize: fonte.texto }]}>{feedbackMsg}</Text>
+        </View>
 
-        <TouchableOpacity style={styles.botaoPrincipal} onPress={handleVoltarLobby}>
-          <Text style={styles.textoBotaoPrincipal}>Novo Simulado</Text>
-        </TouchableOpacity>
+        <View style={styles.resultadoButtonsContainer}>
+          <TouchableOpacity style={styles.botaoPrincipal} onPress={handleVoltarLobby} activeOpacity={0.8}>
+            <Text style={styles.textoBotaoPrincipal}>Novo Simulado</Text>
+            <Ionicons name="refresh-outline" size={20} color="#FFFFFF" style={{ marginLeft: 8 }} />
+          </TouchableOpacity>
 
-        <TouchableOpacity style={[styles.botaoPrincipal, styles.botaoSecundario]} onPress={() => router.push('/Home')}>
-          <Text style={styles.textoBotaoSecundario}>Voltar ao Menu Principal</Text>
-        </TouchableOpacity>
+          <TouchableOpacity 
+            style={[styles.botaoPrincipal, styles.botaoSecundario]} 
+            onPress={() => router.replace('/Home')}
+            activeOpacity={0.8}
+          >
+            <Text style={styles.textoBotaoSecundario}>Voltar ao Início</Text>
+            <Ionicons name="home-outline" size={20} color="#004B9B" style={{ marginLeft: 8 }} />
+          </TouchableOpacity>
+        </View>
       </View>
     );
   };
 
   return (
     <View style={styles.container}>
+      {/* HEADER */}
       <View style={styles.header}>
         {faseQuiz === 'lobby' ? (
-          <TouchableOpacity onPress={() => router.back()} style={styles.voltarBtn}>
-            <Text style={styles.voltarText}>← Home</Text>
+          <TouchableOpacity 
+            onPress={() => router.back()} 
+            style={styles.backButton}
+            activeOpacity={0.7}
+          >
+            <Ionicons name="arrow-back" size={24} color="#004B9B" />
           </TouchableOpacity>
         ) : (
-          <TouchableOpacity onPress={handleVoltarLobby} style={styles.voltarBtn}>
-            <Text style={styles.voltarText}>← Abortar</Text>
+          <TouchableOpacity 
+            onPress={handleVoltarLobby} 
+            style={styles.backButton}
+            activeOpacity={0.7}
+          >
+            <Ionicons name="close-circle-outline" size={24} color="#D32F2F" />
           </TouchableOpacity>
         )}
-        <Text style={styles.headerTitle}>SIMULADO QUIZ</Text>
-        <Text style={styles.headerSubtitle}>Tutor OlympIA</Text>
+        <View style={styles.headerTextContainer}>
+          <Text style={[styles.headerTitle, { fontSize: fonte.titulo }]}>
+            {faseQuiz === 'lobby' ? 'SIMULADO QUIZ' : faseQuiz === 'jogando' ? 'SIMULADO EM CURSO' : 'RESULTADO'}
+          </Text>
+          <Text style={styles.headerSubtitle}>Tutor Inteligente OlympIA</Text>
+        </View>
       </View>
 
       {faseQuiz === 'lobby' && renderLobby()}
@@ -419,67 +557,465 @@ export default function Quiz() {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#cceaff' },
-  header: { backgroundColor: '#024084', paddingTop: 50, paddingBottom: 16, paddingHorizontal: 20 },
-  voltarBtn: { marginBottom: 6 },
-  voltarText: { color: '#e4b93f', fontSize: 14, fontWeight: 'bold' },
-  headerTitle: { color: '#fff', fontSize: 22, fontWeight: 'bold', textAlign: 'center' },
-  headerSubtitle: { color: '#e4b93f', fontSize: 12, textAlign: 'center', marginTop: 2 },
+  container: {
+    flex: 1,
+    backgroundColor: '#F3F9FD',
+  },
+  header: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingTop: Platform.OS === 'ios' ? 50 : 40,
+    paddingBottom: 16,
+    paddingHorizontal: 20,
+    backgroundColor: '#FFFFFF',
+    borderBottomWidth: 1,
+    borderColor: '#E1F0FC',
+    ...Platform.select({
+      ios: {
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.05,
+        shadowRadius: 3,
+      },
+      android: {
+        elevation: 2,
+      },
+    }),
+  },
+  backButton: {
+    width: 42,
+    height: 42,
+    borderRadius: 21,
+    backgroundColor: '#F3F9FD',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginRight: 15,
+    borderWidth: 1,
+    borderColor: '#E1F0FC',
+  },
+  headerTextContainer: {
+    flex: 1,
+  },
+  headerTitle: {
+    color: '#004B9B',
+    fontWeight: 'bold',
+  },
+  headerSubtitle: {
+    color: '#6085a6',
+    fontSize: 13,
+    marginTop: 2,
+  },
 
-  lobbyContent: { padding: 20, paddingBottom: 40 },
-  lobbySubtitulo: { fontSize: 16, textAlign: 'center', color: '#024084', marginBottom: 25, fontWeight: '500' },
-  secaoFiltro: { marginBottom: 24 },
-  filtroLabel: { fontSize: 15, fontWeight: 'bold', color: '#024084', marginBottom: 10 },
-  grupoBotoes: { flexDirection: 'row', gap: 10 },
-  grupoBotoesFlex: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
-  botaoOpcao: { flex: 1, backgroundColor: '#fff', paddingVertical: 12, borderRadius: 10, alignItems: 'center', borderWidth: 1, borderColor: '#dde3ec' },
-  botaoOpcaoAtivo: { backgroundColor: '#024084', borderColor: '#024084' },
-  textoOpcao: { color: '#333', fontWeight: 'bold', fontSize: 14 },
-  textoOpcaoAtivo: { color: '#fff' },
-  botaoBadge: { backgroundColor: '#fff', paddingHorizontal: 14, paddingVertical: 8, borderRadius: 20, borderWidth: 1, borderColor: '#dde3ec' },
-  botaoBadgeAtivo: { backgroundColor: '#024084', borderColor: '#024084' },
-  textoBadge: { color: '#555', fontSize: 13, fontWeight: '600' },
-  textoBadgeAtivo: { color: '#fff' },
+  // Lobby Styles
+  lobbyContent: {
+    padding: 20,
+    paddingBottom: 40,
+  },
+  lobbySubtitulo: {
+    textAlign: 'center',
+    color: '#546E7A',
+    marginBottom: 20,
+    lineHeight: 22,
+    fontWeight: '500',
+  },
+  cardFiltros: {
+    backgroundColor: '#FFFFFF',
+    borderRadius: 20,
+    borderWidth: 1,
+    borderColor: '#E1F0FC',
+    padding: 16,
+    marginBottom: 20,
+    ...Platform.select({
+      ios: {
+        shadowColor: '#024084',
+        shadowOffset: { width: 0, height: 4 },
+        shadowOpacity: 0.05,
+        shadowRadius: 10,
+      },
+      android: {
+        elevation: 3,
+      },
+    }),
+  },
+  secaoFiltro: {
+    paddingVertical: 10,
+  },
+  filtroHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 12,
+  },
+  filtroLabel: {
+    fontSize: 14,
+    fontWeight: '700',
+    color: '#004B9B',
+    textTransform: 'uppercase',
+    letterSpacing: 0.5,
+  },
+  grupoBotoes: {
+    flexDirection: 'row',
+    gap: 8,
+  },
+  grupoBotoesFlex: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 8,
+  },
+  botaoOpcao: {
+    flex: 1,
+    backgroundColor: '#F8FBFE',
+    paddingVertical: 12,
+    borderRadius: 12,
+    alignItems: 'center',
+    borderWidth: 1,
+    borderColor: '#E1F0FC',
+  },
+  botaoOpcaoAtivo: {
+    backgroundColor: '#004B9B',
+    borderColor: '#004B9B',
+  },
+  textoOpcao: {
+    color: '#546E7A',
+    fontWeight: '700',
+  },
+  textoOpcaoAtivo: {
+    color: '#FFFFFF',
+  },
+  botaoBadge: {
+    backgroundColor: '#F8FBFE',
+    paddingHorizontal: 14,
+    paddingVertical: 8,
+    borderRadius: 20,
+    borderWidth: 1,
+    borderColor: '#E1F0FC',
+  },
+  botaoBadgeAtivo: {
+    backgroundColor: '#004B9B',
+    borderColor: '#004B9B',
+  },
+  textoBadge: {
+    color: '#546E7A',
+    fontWeight: '600',
+  },
+  textoBadgeAtivo: {
+    color: '#FFFFFF',
+  },
+  divider: {
+    height: 1,
+    backgroundColor: '#F0F5FA',
+    marginVertical: 8,
+  },
 
-  jogandoContent: { padding: 16, paddingBottom: 40 },
-  containerProgresso: { marginBottom: 16 },
-  barraFundoProgresso: { height: 6, backgroundColor: '#fff', borderRadius: 3, overflow: 'hidden', marginBottom: 8 },
-  barraAtivaProgresso: { height: '100%', backgroundColor: '#024084' },
-  infoProgresso: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
-  textoProgresso: { fontSize: 13, fontWeight: 'bold', color: '#024084' },
-  textoFiltrosQuestao: { fontSize: 11, color: '#666' },
+  // Jogando Styles
+  jogandoContent: {
+    padding: 16,
+    paddingBottom: 40,
+  },
+  containerProgresso: {
+    marginBottom: 16,
+    backgroundColor: '#FFFFFF',
+    borderRadius: 16,
+    padding: 14,
+    borderWidth: 1,
+    borderColor: '#E1F0FC',
+  },
+  progressoHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 10,
+  },
+  capsulaQuestao: {
+    backgroundColor: '#E1F0FC',
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+    borderRadius: 8,
+  },
+  textoProgresso: {
+    fontWeight: '700',
+    color: '#004B9B',
+    fontSize: 12,
+  },
+  capsulaMeta: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  textoFiltrosQuestao: {
+    fontSize: 12,
+    color: '#546E7A',
+    fontWeight: '600',
+  },
+  barraFundoProgresso: {
+    height: 8,
+    backgroundColor: '#CFD8DC',
+    borderRadius: 4,
+    overflow: 'hidden',
+  },
+  barraAtivaProgresso: {
+    height: '100%',
+    backgroundColor: '#004B9B',
+  },
+  cardEnunciado: {
+    backgroundColor: '#FFFFFF',
+    borderRadius: 18,
+    padding: 18,
+    marginBottom: 16,
+    borderWidth: 1,
+    borderColor: '#E1F0FC',
+    ...Platform.select({
+      ios: {
+        shadowColor: '#024084',
+        shadowOffset: { width: 0, height: 4 },
+        shadowOpacity: 0.04,
+        shadowRadius: 8,
+      },
+      android: {
+        elevation: 2,
+      },
+    }),
+  },
+  textoEnunciado: {
+    color: '#2C3E50',
+    lineHeight: 24,
+    fontWeight: '500',
+  },
+  containerAlternativas: {
+    gap: 12,
+    marginBottom: 16,
+  },
+  cardAlternativa: {
+    flexDirection: 'row',
+    backgroundColor: '#FFFFFF',
+    padding: 14,
+    borderRadius: 16,
+    borderWidth: 1,
+    borderColor: '#E1F0FC',
+    alignItems: 'center',
+    gap: 12,
+    ...Platform.select({
+      ios: {
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 1 },
+        shadowOpacity: 0.02,
+        shadowRadius: 3,
+      },
+      android: {
+        elevation: 1,
+      },
+    }),
+  },
+  cardAlternativaSelecionado: {
+    borderColor: '#004B9B',
+    backgroundColor: '#E1F0FC',
+  },
+  cardAlternativaCorreto: {
+    borderColor: '#2E7D32',
+    backgroundColor: '#E8F5E9',
+  },
+  cardAlternativaErrado: {
+    borderColor: '#D32F2F',
+    backgroundColor: '#FFEBEE',
+  },
+  letraBadge: {
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    backgroundColor: '#FFFFFF',
+    borderWidth: 1.5,
+    borderColor: '#004B9B',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  letraBadgeSelecionado: {
+    backgroundColor: '#004B9B',
+    borderColor: '#004B9B',
+  },
+  letraBadgeCorreto: {
+    backgroundColor: '#2E7D32',
+    borderColor: '#2E7D32',
+  },
+  letraBadgeErrado: {
+    backgroundColor: '#D32F2F',
+    borderColor: '#D32F2F',
+  },
+  letraTexto: {
+    color: '#004B9B',
+    fontWeight: 'bold',
+    fontSize: 14,
+  },
+  textoAlternativa: {
+    flex: 1,
+    color: '#2C3E50',
+    lineHeight: 20,
+  },
+  textoAlternativaSelecionado: {
+    color: '#004B9B',
+    fontWeight: '700',
+  },
+  textoAlternativaCorreto: {
+    color: '#2E7D32',
+    fontWeight: '700',
+  },
+  textoAlternativaErrado: {
+    color: '#D32F2F',
+    fontWeight: '700',
+  },
+  cardExplicacao: {
+    padding: 16,
+    borderRadius: 18,
+    marginBottom: 16,
+    borderWidth: 1,
+  },
+  cardExplicacaoCorreto: {
+    backgroundColor: '#E8F5E9',
+    borderColor: '#A5D6A7',
+  },
+  cardExplicacaoErrado: {
+    backgroundColor: '#FFF3E0',
+    borderColor: '#FFCC80',
+  },
+  explicacaoHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 12,
+  },
+  tituloExplicacao: {
+    fontWeight: 'bold',
+  },
+  explicacaoIaBox: {
+    backgroundColor: '#FFFFFF',
+    borderRadius: 12,
+    padding: 12,
+    borderWidth: 1,
+    borderColor: '#F0F5FA',
+  },
+  explicacaoIaTitleRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 6,
+  },
+  explicacaoIaTitle: {
+    fontSize: 12,
+    fontWeight: '700',
+    color: '#E65100',
+    textTransform: 'uppercase',
+  },
+  textoExplicacao: {
+    lineHeight: 20,
+    color: '#455A64',
+  },
 
-  cardEnunciado: { backgroundColor: '#fff', borderRadius: 12, padding: 18, marginBottom: 16, borderWidth: 1, borderColor: '#dde3ec' },
-  textoEnunciado: { fontSize: 15, color: '#1a1a2e', lineHeight: 22, fontWeight: '500' },
+  // Botões
+  botaoPrincipal: {
+    backgroundColor: '#004B9B',
+    paddingVertical: 16,
+    borderRadius: 16,
+    alignItems: 'center',
+    justifyContent: 'center',
+    flexDirection: 'row',
+    marginVertical: 8,
+    ...Platform.select({
+      ios: {
+        shadowColor: '#004B9B',
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.15,
+        shadowRadius: 4,
+      },
+      android: {
+        elevation: 2,
+      },
+    }),
+  },
+  botaoDesabilitado: {
+    backgroundColor: '#B3D7F7',
+  },
+  textoBotaoPrincipal: {
+    color: '#FFFFFF',
+    fontSize: 16,
+    fontWeight: 'bold',
+  },
+  botaoSecundario: {
+    backgroundColor: 'transparent',
+    borderWidth: 2,
+    borderColor: '#004B9B',
+  },
+  textoBotaoSecundario: {
+    color: '#004B9B',
+    fontSize: 16,
+    fontWeight: 'bold',
+  },
 
-  containerAlternativas: { gap: 10, marginBottom: 16 },
-  cardAlternativa: { flexDirection: 'row', backgroundColor: '#fff', padding: 14, borderRadius: 12, borderWidth: 1, borderColor: '#dde3ec', alignItems: 'center', gap: 12 },
-  cardAlternativaSelecionado: { borderColor: '#024084', backgroundColor: '#ebf5fb' },
-  cardAlternativaCorreto: { borderColor: '#27ae60', backgroundColor: '#e8f8f5' },
-  cardAlternativaErrado: { borderColor: '#c0392b', backgroundColor: '#fde8e8' },
-  letraBadge: { width: 30, height: 30, borderRadius: 15, backgroundColor: '#024084', justifyContent: 'center', alignItems: 'center' },
-  letraTexto: { color: '#fff', fontWeight: 'bold', fontSize: 13 },
-  textoAlternativa: { flex: 1, fontSize: 14, color: '#1a1a2e', lineHeight: 20 },
-  textoAlternativaSelecionado: { color: '#024084', fontWeight: 'bold' },
-  textoAlternativaCorreto: { color: '#27ae60', fontWeight: 'bold' },
-  textoAlternativaErrado: { color: '#c0392b', fontWeight: 'bold' },
-
-  cardExplicacao: { padding: 16, borderRadius: 12, marginBottom: 16, borderWidth: 1 },
-  cardExplicacaoCorreto: { backgroundColor: '#e8f8f5', borderColor: '#27ae60' },
-  cardExplicacaoErrado: { backgroundColor: '#fdf2e9', borderColor: '#e67e22' },
-  tituloExplicacao: { fontSize: 15, fontWeight: 'bold', marginBottom: 6 },
-  textoExplicacao: { fontSize: 13, lineHeight: 18, color: '#444' },
-
-  botaoPrincipal: { backgroundColor: '#024084', padding: 15, borderRadius: 12, alignItems: 'center', marginVertical: 10 },
-  botaoDesabilitado: { backgroundColor: '#a0b0c8' },
-  textoBotaoPrincipal: { color: '#fff', fontSize: 16, fontWeight: 'bold' },
-  botaoSecundario: { backgroundColor: 'transparent', borderWidth: 2, borderColor: '#024084' },
-  textoBotaoSecundario: { color: '#024084', fontSize: 16, fontWeight: 'bold' },
-
-  resultadoContent: { flex: 1, justifyContent: 'center', alignItems: 'center', padding: 24, gap: 20 },
-  resultadoTitulo: { fontSize: 24, fontWeight: 'bold', color: '#024084', textAlign: 'center' },
-  resultadoCirculo: { width: 180, height: 180, borderRadius: 90, backgroundColor: '#fff', borderWidth: 6, borderColor: '#e4b93f', justifyContent: 'center', alignItems: 'center' },
-  resultadoScore: { fontSize: 44, fontWeight: 'bold', color: '#024084' },
-  resultadoScoreDetalhe: { fontSize: 13, color: '#666', marginTop: 4 },
-  resultadoFeedback: { fontSize: 15, textAlign: 'center', color: '#024084', paddingHorizontal: 12, lineHeight: 22, fontWeight: '500' },
+  // Resultado Styles
+  resultadoContent: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 24,
+    gap: 20,
+  },
+  resultadoTitulo: {
+    fontWeight: 'bold',
+    color: '#004B9B',
+    textAlign: 'center',
+  },
+  resultadoCirculo: {
+    width: 170,
+    height: 170,
+    borderRadius: 85,
+    backgroundColor: '#FFFFFF',
+    borderWidth: 6,
+    justifyContent: 'center',
+    alignItems: 'center',
+    ...Platform.select({
+      ios: {
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 4 },
+        shadowOpacity: 0.08,
+        shadowRadius: 8,
+      },
+      android: {
+        elevation: 4,
+      },
+    }),
+  },
+  resultadoScore: {
+    fontSize: 40,
+    fontWeight: 'bold',
+    color: '#004B9B',
+  },
+  resultadoScoreDetalhe: {
+    fontSize: 12,
+    color: '#78909C',
+    marginTop: 2,
+    fontWeight: '600',
+  },
+  resultadoFeedbackCard: {
+    backgroundColor: '#FFFFFF',
+    borderRadius: 16,
+    borderWidth: 1,
+    borderColor: '#E1F0FC',
+    padding: 16,
+    width: '100%',
+    ...Platform.select({
+      ios: {
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.03,
+        shadowRadius: 4,
+      },
+      android: {
+        elevation: 2,
+      },
+    }),
+  },
+  resultadoFeedback: {
+    textAlign: 'center',
+    color: '#546E7A',
+    lineHeight: 22,
+    fontWeight: '500',
+  },
+  resultadoButtonsContainer: {
+    width: '100%',
+    marginTop: 10,
+  },
 });
