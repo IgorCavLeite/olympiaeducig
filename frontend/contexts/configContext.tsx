@@ -5,14 +5,11 @@ import React, {
 } from 'react';
 
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import i18n from '../i18n';
 
 interface ConfigContextData {
   fonteGrande: boolean;
-  idioma: string;
 
   alterarFonte: (valor: boolean) => void;
-  alterarIdioma: (valor: string) => void;
 }
 
 export const ConfigContext =
@@ -25,9 +22,6 @@ export function ConfigProvider({
   const [fonteGrande, setFonteGrande] =
   useState(false);
 
-  const [idioma, setIdioma] =
-  useState('pt');
-
   useEffect(() => {
     carregarConfiguracoes();
   }, []);
@@ -39,18 +33,8 @@ export function ConfigProvider({
         'fonteGrande'
       );
 
-    const idiomaSalvo =
-      await AsyncStorage.getItem(
-        'idioma'
-      );
-
     if (fonte) {
       setFonteGrande(JSON.parse(fonte));
-    }
-
-    if (idiomaSalvo) {
-      setIdioma(idiomaSalvo);
-      i18n.changeLanguage(idiomaSalvo);
     }
   }
 
@@ -66,27 +50,11 @@ export function ConfigProvider({
     );
   }
 
-  async function alterarIdioma(
-    valor: string
-  ) {
-
-    setIdioma(valor);
-
-    i18n.changeLanguage(valor);
-
-    await AsyncStorage.setItem(
-      'idioma',
-      valor
-    );
-  }
-
   return (
     <ConfigContext.Provider
       value={{
         fonteGrande,
-        idioma,
         alterarFonte,
-        alterarIdioma
       }}
     >
       {children}

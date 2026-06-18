@@ -1,12 +1,10 @@
 import React from 'react';
 import { ScrollView, Text, StyleSheet, TouchableOpacity, View } from 'react-native';
 import { useRouter } from 'expo-router';
-import { useTranslation } from 'react-i18next';
 import { useFonte } from '../utils/fontes';
 
 export default function FAQ() {
   const router = useRouter();
-  const { t } = useTranslation();
   const fonte = useFonte();
 
   return (

@@ -16,7 +16,6 @@ import {
 } from 'react-native';
 import { useRouter } from 'expo-router';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { useTranslation } from 'react-i18next';
 import { useFonte } from '../utils/fontes';
 import { Ionicons } from '@expo/vector-icons';
 import { ENDPOINTS } from '../constants/Config';
@@ -34,7 +33,6 @@ type Message = {
 
 const Chat = () => {
   const router = useRouter();
-  const { t } = useTranslation();
   const fonte = useFonte();
 
   const [messages, setMessages] = useState<Message[]>([]);
@@ -55,7 +53,7 @@ const Chat = () => {
     setMessages([
       {
         id: 'welcome',
-        text: t('welcomeMessage') || 'Olá! Sou o OlympIA, seu tutor para olimpíadas acadêmicas.\nPosso te ajudar com suas dúvidas em Biologia!\n\nQual tema vamos estudar hoje?',
+        text:'Olá! Sou o OlympIA, seu tutor para olimpíadas acadêmicas.\nPosso te ajudar com suas dúvidas em Biologia!\n\nQual tema vamos estudar hoje?',
         sender: 'ai',
       },
     ]);
@@ -109,7 +107,7 @@ const Chat = () => {
     } catch (error: any) {
       const errorMsg: Message = {
         id: Date.now().toString() + '-error',
-        text: t('connectionError') || 'Não foi possível conectar ao servidor. Verifique sua conexão.',
+        text:'Não foi possível conectar ao servidor. Verifique sua conexão.',
         sender: 'ai',
       };
       LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
@@ -121,19 +119,19 @@ const Chat = () => {
 
   const handleClearChat = () => {
     Alert.alert(
-      t('clearChatTitle') || 'Limpar Conversa',
-      t('clearChatConfirm') || 'Deseja apagar todo o histórico desta conversa?',
+      'Limpar Conversa',
+      'Deseja apagar todo o histórico desta conversa?',
       [
-        { text: t('cancel') || 'Cancelar', style: 'cancel' },
+        { text:'Cancelar', style: 'cancel' },
         { 
-          text: t('clear') || 'Limpar', 
+          text:'Limpar', 
           style: 'destructive',
           onPress: () => {
             LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
             setMessages([
               {
                 id: 'welcome',
-                text: t('welcomeMessage') || 'Olá! Sou o OlympIA, seu tutor para olimpíadas acadêmicas.\nPosso te ajudar com suas dúvidas em Biologia!\n\nQual tema vamos estudar hoje?',
+                text:'Olá! Sou o OlympIA, seu tutor para olimpíadas acadêmicas.\nPosso te ajudar com suas dúvidas em Biologia!\n\nQual tema vamos estudar hoje?',
                 sender: 'ai',
               },
             ]);
@@ -193,7 +191,7 @@ const Chat = () => {
             <Text style={styles.headerTitle}>OlympIA</Text>
             <View style={styles.headerStatusContainer}>
               <Text style={styles.headerSubtitle}>
-                {t('olympiadTutor') || 'Tutor de Olimpíadas'}
+                {'Tutor de Olimpíadas'}
               </Text>
             </View>
           </View>
@@ -231,7 +229,7 @@ const Chat = () => {
           <View style={styles.typingBubble}>
             <ActivityIndicator size="small" color="#004B9B" style={{ marginRight: 8 }} />
             <Text style={[styles.typingText, { fontSize: fonte.pequeno }]}>
-              {t('thinking') || 'OlympIA está pensando...'}
+              {'OlympIA está pensando...'}
             </Text>
           </View>
         </View>
@@ -265,7 +263,7 @@ const Chat = () => {
           <View style={styles.inputContainer}>
             <TextInput
               style={[styles.input, { fontSize: fonte.texto }]}
-              placeholder={t('typeQuestion') || 'Digite sua pergunta...'}
+              placeholder={'Digite sua pergunta...'}
               placeholderTextColor="#90A4AE"
               value={input}
               onChangeText={setInput}

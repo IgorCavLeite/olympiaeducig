@@ -17,7 +17,6 @@ import {
 import { useRouter } from 'expo-router';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import axios from 'axios';
-import { useTranslation } from 'react-i18next';
 import { useFonte } from '../utils/fontes';
 import { Ionicons } from '@expo/vector-icons';
 import { ENDPOINTS } from '../constants/Config';
@@ -35,7 +34,6 @@ interface Stats {
 
 export default function Perfil() {
   const router = useRouter();
-  const { t } = useTranslation();
   const fonte = useFonte();
 
   const [username, setUsername] = useState('');
@@ -94,7 +92,7 @@ export default function Perfil() {
     Keyboard.dismiss();
 
     if (!novoNome.trim()) {
-      Alert.alert(t('error') || 'Erro', t('emptyName') || 'O nome não pode estar vazio');
+      Alert.alert('O nome não pode estar vazio');
       return;
     }
 
@@ -111,10 +109,10 @@ export default function Perfil() {
       setUsername(novoNome.trim());
       setModalNomeVisible(false);
       setNovoNome('');
-      Alert.alert(t('success') || 'Sucesso', t('nameUpdated') || 'Nome atualizado com sucesso!');
+      Alert.alert('Sucesso', 'Nome atualizado com sucesso!');
     } catch (error: any) {
-      const msg = error.response?.data?.error || t('profileUpdateError') || 'Não foi possível atualizar o nome.';
-      Alert.alert(t('error') || 'Erro', msg);
+      const msg = error.response?.data?.error || 'Não foi possível atualizar o nome.';
+      Alert.alert('Erro', msg);
     } finally {
       setSalvandoNome(false);
     }
@@ -125,17 +123,17 @@ export default function Perfil() {
     Keyboard.dismiss();
 
     if (!senhaAtual || !novaSenha || !confirmarSenha) {
-      Alert.alert(t('error') || 'Erro', t('fillFields') || 'Preencha todos os campos');
+      Alert.alert('Erro', 'Preencha todos os campos');
       return;
     }
 
     if (novaSenha.length < 8) {
-      Alert.alert(t('error') || 'Erro', t('passwordMinError') || 'A nova senha deve ter no mínimo 8 caracteres');
+      Alert.alert('Erro', 'A nova senha deve ter no mínimo 8 caracteres');
       return;
     }
 
     if (novaSenha !== confirmarSenha) {
-      Alert.alert(t('error') || 'Erro', t('passwordMismatch') || 'As senhas não coincidem');
+      Alert.alert('Erro', 'As senhas não coincidem');
       return;
     }
 
@@ -149,10 +147,10 @@ export default function Perfil() {
       );
       setModalSenhaVisible(false);
       setSenhaAtual(''); setNovaSenha(''); setConfirmarSenha('');
-      Alert.alert(t('success') || 'Sucesso', t('passwordUpdated') || 'Senha alterada com sucesso!');
+      Alert.alert('Sucesso', 'Senha alterada com sucesso!');
     } catch (error: any) {
-      const mensagem = error.response?.data?.error || t('passwordChangeError') || 'Não foi possível alterar a senha.';
-      Alert.alert(t('error') || 'Erro', mensagem);
+      const mensagem = error.response?.data?.error || 'Não foi possível alterar a senha.';
+      Alert.alert('Erro', mensagem);
     } finally {
       setSalvandoSenha(false);
     }
@@ -160,10 +158,10 @@ export default function Perfil() {
 
   // LOGOUT
   const handleLogout = () => {
-    Alert.alert(t('logout') || 'Sair', t('logoutConfirm') || 'Tem certeza que deseja sair?', [
-      { text: t('cancel') || 'Cancelar', style: 'cancel' },
+    Alert.alert('Sair', 'Tem certeza que deseja sair?', [
+      { text:'Cancelar', style: 'cancel' },
       {
-        text: t('logout') || 'Sair',
+        text: 'Sair',
         style: 'destructive',
         onPress: async () => {
           await AsyncStorage.clear();
@@ -196,7 +194,7 @@ export default function Perfil() {
         </TouchableOpacity>
         <View style={styles.headerTextContainer}>
           <Text style={[styles.headerTitle, { fontSize: fonte.titulo }]}>
-            {t('profile') || 'Perfil'}
+            {'Perfil'}
           </Text>
           <Text style={styles.headerSubtitle}>Bons estudos, {username.split(' ')[0]}!</Text>
         </View>
@@ -284,7 +282,7 @@ export default function Perfil() {
             </View>
           </View>
 
-          {/* OPÇÕES MENU (SETTINGS RAYS STYLE) */}
+          {/* OPÇÕES MENU */}
           <View style={styles.menuCard}>
             <TouchableOpacity
               style={styles.menuRow}
@@ -296,7 +294,7 @@ export default function Perfil() {
                   <Ionicons name="person-outline" size={18} color="#004B9B" />
                 </View>
                 <Text style={[styles.menuText, { fontSize: fonte.texto }]}>
-                  {t('editName') || 'Editar Nome'}
+                  {'Editar Nome'}
                 </Text>
               </View>
               <Ionicons name="chevron-forward" size={18} color="#90A4AE" />
@@ -314,7 +312,7 @@ export default function Perfil() {
                   <Ionicons name="key-outline" size={18} color="#5E35B1" />
                 </View>
                 <Text style={[styles.menuText, { fontSize: fonte.texto }]}>
-                  {t('changePassword') || 'Alterar Senha'}
+                  {'Alterar Senha'}
                 </Text>
               </View>
               <Ionicons name="chevron-forward" size={18} color="#90A4AE" />
@@ -332,7 +330,7 @@ export default function Perfil() {
                   <Ionicons name="log-out-outline" size={18} color="#D32F2F" />
                 </View>
                 <Text style={[styles.menuText, { color: '#D32F2F', fontSize: fonte.texto }]}>
-                  {t('logout') || 'Sair da Conta'}
+                  {'Sair da Conta'}
                 </Text>
               </View>
               <Ionicons name="chevron-forward" size={18} color="#FFCDD2" />
@@ -347,7 +345,7 @@ export default function Perfil() {
           <View style={styles.modalContainer}>
             <View style={styles.modalHeader}>
               <Text style={[styles.modalTitulo, { fontSize: fonte.titulo }]}>
-                {t('editName') || 'Editar Nome'}
+                {'Editar Nome'}
               </Text>
               <TouchableOpacity onPress={() => setModalNomeVisible(false)}>
                 <Ionicons name="close" size={24} color="#546E7A" />
@@ -358,7 +356,7 @@ export default function Perfil() {
               <Ionicons name="person-outline" size={20} color="#004B9B" style={styles.inputFieldIcon} />
               <TextInput
                 style={[styles.modalInput, { fontSize: fonte.texto }]}
-                placeholder={t('newName') || 'Novo nome'}
+                placeholder={'Novo nome'}
                 placeholderTextColor="#90A4AE"
                 value={novoNome}
                 onChangeText={setNovoNome}
@@ -370,7 +368,7 @@ export default function Perfil() {
                 style={[styles.modalBtn, styles.modalBtnCancelar]}
                 onPress={() => { setModalNomeVisible(false); setNovoNome(''); }}
               >
-                <Text style={styles.modalBtnCancelarText}>{t('cancel') || 'Cancelar'}</Text>
+                <Text style={styles.modalBtnCancelarText}>{'Cancelar'}</Text>
               </TouchableOpacity>
               <TouchableOpacity
                 style={[styles.modalBtn, styles.modalBtnSalvar]}
@@ -380,7 +378,7 @@ export default function Perfil() {
                 {salvandoNome ? (
                   <ActivityIndicator color="#FFFFFF" size="small" />
                 ) : (
-                  <Text style={styles.modalBtnSalvarText}>{t('save') || 'Salvar'}</Text>
+                  <Text style={styles.modalBtnSalvarText}>{'Salvar'}</Text>
                 )}
               </TouchableOpacity>
             </View>
@@ -394,7 +392,7 @@ export default function Perfil() {
           <View style={styles.modalContainer}>
             <View style={styles.modalHeader}>
               <Text style={[styles.modalTitulo, { fontSize: fonte.titulo }]}>
-                {t('changePassword') || 'Alterar Senha'}
+                {'Alterar Senha'}
               </Text>
               <TouchableOpacity onPress={() => setModalSenhaVisible(false)}>
                 <Ionicons name="close" size={24} color="#546E7A" />
@@ -405,7 +403,7 @@ export default function Perfil() {
               <Ionicons name="lock-closed-outline" size={20} color="#004B9B" style={styles.inputFieldIcon} />
               <TextInput
                 style={[styles.modalInput, { fontSize: fonte.texto }]}
-                placeholder={t('currentPassword') || 'Senha atual'}
+                placeholder={'Senha atual'}
                 placeholderTextColor="#90A4AE"
                 secureTextEntry
                 value={senhaAtual}
@@ -417,7 +415,7 @@ export default function Perfil() {
               <Ionicons name="key-outline" size={20} color="#5E35B1" style={styles.inputFieldIcon} />
               <TextInput
                 style={[styles.modalInput, { fontSize: fonte.texto }]}
-                placeholder={t('newPassword') || 'Nova senha'}
+                placeholder={'Nova senha'}
                 placeholderTextColor="#90A4AE"
                 secureTextEntry
                 value={novaSenha}
@@ -429,7 +427,7 @@ export default function Perfil() {
               <Ionicons name="checkmark-circle-outline" size={20} color="#5E35B1" style={styles.inputFieldIcon} />
               <TextInput
                 style={[styles.modalInput, { fontSize: fonte.texto }]}
-                placeholder={t('confirmPassword') || 'Confirmar nova senha'}
+                placeholder={'Confirmar nova senha'}
                 placeholderTextColor="#90A4AE"
                 secureTextEntry
                 value={confirmarSenha}
@@ -445,7 +443,7 @@ export default function Perfil() {
                   setSenhaAtual(''); setNovaSenha(''); setConfirmarSenha('');
                 }}
               >
-                <Text style={styles.modalBtnCancelarText}>{t('cancel') || 'Cancelar'}</Text>
+                <Text style={styles.modalBtnCancelarText}>{'Cancelar'}</Text>
               </TouchableOpacity>
               <TouchableOpacity
                 style={[styles.modalBtn, styles.modalBtnSalvar]}
@@ -455,7 +453,7 @@ export default function Perfil() {
                 {salvandoSenha ? (
                   <ActivityIndicator color="#FFFFFF" size="small" />
                 ) : (
-                  <Text style={styles.modalBtnSalvarText}>{t('save') || 'Salvar'}</Text>
+                  <Text style={styles.modalBtnSalvarText}>{'Salvar'}</Text>
                 )}
               </TouchableOpacity>
             </View>

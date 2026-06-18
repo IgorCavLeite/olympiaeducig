@@ -3,12 +3,10 @@ import { View, Text, Image, Pressable, StyleSheet } from 'react-native';
 import { useEffect } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useRouter } from 'expo-router';
-import { useTranslation } from 'react-i18next';
 import { useFonte } from '../utils/fontes';
 
 export default function Home() {
   const router = useRouter();
-  const { t } = useTranslation();
   const fonte = useFonte();
 
   useEffect(() => {
@@ -29,7 +27,7 @@ export default function Home() {
       />
 
       <Text style={[styles.title, { fontSize: fonte.titulo }]}>
-        {t('welcome')} Olymp<Text style={styles.ia}>IA</Text>!
+        {'Bem-vindo ao'} Olymp<Text style={styles.ia}>IA</Text>!
       </Text>
 
       <View style={styles.mainGrid}>

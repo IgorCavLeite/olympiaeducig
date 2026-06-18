@@ -11,7 +11,6 @@ import {
   UIManager,
 } from 'react-native';
 import { useRouter } from 'expo-router';
-import { useTranslation } from 'react-i18next';
 import { useFonte } from '../utils/fontes';
 import { Ionicons } from '@expo/vector-icons';
 
@@ -112,7 +111,6 @@ const OBBS_DATA: Phase[] = [
 
 export default function Calendario() {
   const router = useRouter();
-  const { t } = useTranslation();
   const fonte = useFonte();
 
   const [activeTab, setActiveTab] = React.useState<'obb' | 'obbs'>('obb');
@@ -187,7 +185,7 @@ export default function Calendario() {
         </TouchableOpacity>
         <View style={styles.headerTextContainer}>
           <Text style={[styles.titulo, { fontSize: fonte.titulo }]}>
-            {t('calendar') || 'Calendário'}
+            {'Calendário'}
           </Text>
           <Text style={styles.subtituloHeader}>
             Cronograma e Fases 2026

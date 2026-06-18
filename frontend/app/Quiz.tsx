@@ -14,7 +14,6 @@ import {
 import { useRouter } from 'expo-router';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import axios from 'axios';
-import { useTranslation } from 'react-i18next';
 import { useFonte } from '../utils/fontes';
 import { Ionicons } from '@expo/vector-icons';
 import { ENDPOINTS } from '../constants/Config';
@@ -39,7 +38,6 @@ interface Questao {
 
 export default function Quiz() {
   const router = useRouter();
-  const { t } = useTranslation();
   const fonte = useFonte();
 
   // Estados de Fluxo
@@ -118,7 +116,7 @@ export default function Quiz() {
     try {
       const token = await AsyncStorage.getItem('token');
       if (!token) {
-        Alert.alert(t('error') || 'Erro', 'Você precisa estar logado para fazer o quiz');
+        Alert.alert('Erro', 'Você precisa estar logado para fazer o quiz');
         router.replace('/LoginScreen');
         return;
       }
@@ -145,7 +143,7 @@ export default function Quiz() {
       setFaseQuizComAnimacao('jogando');
     } catch (error: any) {
       const msg = error.response?.data?.error || 'Não foi possível carregar as questões.';
-      Alert.alert(t('error') || 'Erro', msg);
+      Alert.alert('Erro', msg);
     } finally {
       setCarregando(false);
     }
@@ -181,7 +179,7 @@ export default function Quiz() {
         setTotalAcertos(prev => prev + 1);
       }
     } catch (error: any) {
-      Alert.alert(t('error') || 'Erro', 'Falha ao processar a resposta.');
+      Alert.alert('Erro', 'Falha ao processar a resposta.');
     } finally {
       setCarregando(false);
     }

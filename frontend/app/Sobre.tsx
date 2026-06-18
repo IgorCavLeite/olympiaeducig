@@ -1,12 +1,10 @@
 import React from 'react';
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity } from 'react-native';
 import { useRouter } from 'expo-router';
-import { useTranslation } from 'react-i18next';
 import { useFonte } from '../utils/fontes';
 
 export default function Sobre() {
   const router = useRouter();
-  const { t } = useTranslation();
   const fonte = useFonte();
 
   return (
@@ -17,7 +15,7 @@ export default function Sobre() {
           <Text style={[styles.voltar, { fontSize: fonte.titulo }]}>←</Text>
         </TouchableOpacity>
         <Text style={[styles.titulo, { fontSize: fonte.titulo }]}>
-          {t('about')}
+          Sobre
         </Text>
       </View>
 

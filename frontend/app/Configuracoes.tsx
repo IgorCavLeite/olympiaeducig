@@ -2,20 +2,17 @@ import React, { useContext } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, Switch, ScrollView, Platform } from 'react-native';
 import { useRouter } from 'expo-router';
 import { ConfigContext } from '../contexts/configContext';
-import { useTranslation } from 'react-i18next';
 import { useFonte } from '../utils/fontes';
 import { Ionicons } from '@expo/vector-icons';
 
 export default function Configuracoes() {
   const router = useRouter();
-  const { t } = useTranslation();
   const fonte = useFonte();
 
   const {
     fonteGrande,
     idioma,
     alterarFonte,
-    alterarIdioma,
   } = useContext(ConfigContext);
 
   return (
@@ -31,7 +28,7 @@ export default function Configuracoes() {
         </TouchableOpacity>
         <View style={styles.headerTextContainer}>
           <Text style={[styles.titulo, { fontSize: fonte.titulo }]}>
-            {t('settings') || 'Configurações'}
+            {'Configurações'}
           </Text>
           <Text style={styles.subtituloHeader}>
             Gerencie suas preferências de uso
@@ -40,7 +37,7 @@ export default function Configuracoes() {
       </View>
 
       {/* SEÇÃO: GERAL */}
-      <Text style={styles.sectionLabel}>{t('general') || 'Geral'}</Text>
+      <Text style={styles.sectionLabel}>{'Geral'}</Text>
       <View style={styles.card}>
         <View style={styles.item}>
           <View style={styles.itemLeft}>
@@ -48,7 +45,7 @@ export default function Configuracoes() {
               <Ionicons name="text-outline" size={18} color="#004B9B" />
             </View>
             <Text style={[styles.label, { fontSize: fonte.texto }]}>
-              {t('largeFont')}
+              {'Fonte Grande'}
             </Text>
           </View>
           <Switch 
@@ -71,77 +68,15 @@ export default function Configuracoes() {
               <Ionicons name="shield-checkmark-outline" size={18} color="#2E7D32" />
             </View>
             <Text style={[styles.linkLabel, { fontSize: fonte.texto }]}>
-              {t('privacyPolicy')}
+              {'Política de Privacidade'}
             </Text>
           </View>
           <Ionicons name="chevron-forward" size={18} color="#90A4AE" />
         </TouchableOpacity>
       </View>
 
-      {/* SEÇÃO: IDIOMA */}
-      <Text style={styles.sectionLabel}>{t('language') || 'Idioma'}</Text>
-      <View style={styles.card}>
-        <TouchableOpacity
-          onPress={() => alterarIdioma('pt')}
-          style={styles.radioRow}
-          activeOpacity={0.7}
-        >
-          <View style={styles.radioLeft}>
-            <View style={[styles.iconBg, { backgroundColor: '#EDE7F6' }]}>
-              <Ionicons name="globe-outline" size={18} color="#5E35B1" />
-            </View>
-            <Text style={[styles.radioLabel, { fontSize: fonte.texto }]}>
-              Português
-            </Text>
-          </View>
-          <View style={[styles.radioCircle, idioma === 'pt' && styles.radioCircleActive]}>
-            {idioma === 'pt' && <View style={styles.radioInnerCircle} />}
-          </View>
-        </TouchableOpacity>
-
-        <View style={styles.divider} />
-
-        <TouchableOpacity
-          onPress={() => alterarIdioma('en')}
-          style={styles.radioRow}
-          activeOpacity={0.7}
-        >
-          <View style={styles.radioLeft}>
-            <View style={[styles.iconBg, { backgroundColor: '#EDE7F6' }]}>
-              <Ionicons name="globe-outline" size={18} color="#5E35B1" />
-            </View>
-            <Text style={[styles.radioLabel, { fontSize: fonte.texto }]}>
-              English
-            </Text>
-          </View>
-          <View style={[styles.radioCircle, idioma === 'en' && styles.radioCircleActive]}>
-            {idioma === 'en' && <View style={styles.radioInnerCircle} />}
-          </View>
-        </TouchableOpacity>
-
-        <View style={styles.divider} />
-
-        <TouchableOpacity
-          onPress={() => alterarIdioma('es')}
-          style={styles.radioRow}
-          activeOpacity={0.7}
-        >
-          <View style={styles.radioLeft}>
-            <View style={[styles.iconBg, { backgroundColor: '#EDE7F6' }]}>
-              <Ionicons name="globe-outline" size={18} color="#5E35B1" />
-            </View>
-            <Text style={[styles.radioLabel, { fontSize: fonte.texto }]}>
-              Español
-            </Text>
-          </View>
-          <View style={[styles.radioCircle, idioma === 'es' && styles.radioCircleActive]}>
-            {idioma === 'es' && <View style={styles.radioInnerCircle} />}
-          </View>
-        </TouchableOpacity>
-      </View>
-
       {/* SEÇÃO: AJUDA */}
-      <Text style={styles.sectionLabel}>{t('helpSupport') || 'Ajuda e Suporte'}</Text>
+      <Text style={styles.sectionLabel}>{'Ajuda e Suporte'}</Text>
       <View style={styles.card}>
         <TouchableOpacity 
           style={styles.linkRow} 
@@ -153,7 +88,7 @@ export default function Configuracoes() {
               <Ionicons name="help-circle-outline" size={18} color="#E65100" />
             </View>
             <Text style={[styles.linkLabel, { fontSize: fonte.texto }]}>
-              FAQ
+              {'FAQ'}
             </Text>
           </View>
           <Ionicons name="chevron-forward" size={18} color="#90A4AE" />
@@ -171,7 +106,7 @@ export default function Configuracoes() {
               <Ionicons name="chatbox-ellipses-outline" size={18} color="#8E24AA" />
             </View>
             <Text style={[styles.linkLabel, { fontSize: fonte.texto }]}>
-              {t('sendFeedback') || 'Enviar Feedback'}
+              {'Enviar Feedback'}
             </Text>
           </View>
           <Ionicons name="chevron-forward" size={18} color="#90A4AE" />
@@ -189,7 +124,7 @@ export default function Configuracoes() {
               <Ionicons name="information-circle-outline" size={18} color="#00838F" />
             </View>
             <Text style={[styles.linkLabel, { fontSize: fonte.texto }]}>
-              {t('about') || 'Sobre'}
+              {'Sobre'}
             </Text>
           </View>
           <Ionicons name="chevron-forward" size={18} color="#90A4AE" />
