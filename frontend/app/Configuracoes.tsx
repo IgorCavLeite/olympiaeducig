@@ -11,7 +11,6 @@ export default function Configuracoes() {
 
   const {
     fonteGrande,
-    idioma,
     alterarFonte,
   } = useContext(ConfigContext);
 
